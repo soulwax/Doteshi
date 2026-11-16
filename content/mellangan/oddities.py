@@ -1,7 +1,8 @@
 """Fourteen biome curiosities for Mellangan: standing objects and landmarks, one variant each."""
 import math
 
-from doteshi import mat, pat, profile, sdf, sprite
+from doteshi import mat, override, pat, profile, sdf, sprite
+from doteshi.resolve.style import OUTLINE
 
 G = 0.9
 
@@ -193,3 +194,51 @@ def starfall_well(s, rng):
         pts.append((rad * math.cos(a), -0.4 + rad * math.sin(a)))
     s.part(sdf.polygon(pts).grow(0.06), mat.glowing("#ffd860", emit=0.6), z=0.1, soft=True)
     s.part(sdf.polygon(pts), mat.glowing("#ffcf3f", emit=1.0), profile=profile.bevel(0.4), z=0.2, keep=True)
+
+
+ROD = ["...........y....",
+       "..........yWy...",
+       ".........yWWy...",
+       "..........yWy...",
+       "...........y....",
+       "........yxx.....",
+       ".........x......",
+       ".........x......",
+       "........xix.....",
+       "........xix.....",
+       "........xix.....",
+       "........xix.....",
+       "........xix.....",
+       "......xxsssxx...",
+       ".....xssttttsx..",
+       ".....xxxxxxxxx.."]
+
+
+@override("oddity_lightning_rod", 16)
+def oddity_lightning_rod_16(rng):
+    return ROD, {"y": (120, 190, 255), "W": (255, 250, 210), "x": (63, 38, 49), "i": (58, 60, 74),
+                 "s": (110, 108, 120), "t": (150, 148, 160)}, OUTLINE
+
+
+DIAL = ["................",
+        "................",
+        "......xxx.......",
+        ".....xWWWx......",
+        "....xWx.xWx.....",
+        "....xW....x.....",
+        "....xWx.........",
+        ".....xWWx.......",
+        "......xxdx......",
+        "...xxxxxddxxx...",
+        "..xttttttddttx..",
+        "..xtsttttttdtx..",
+        "..xxxxxxxxxxxx..",
+        "...xssssssssx...",
+        "...xxxxxxxxxx...",
+        "................"]
+
+
+@override("oddity_lunar_dial", 16)
+def oddity_lunar_dial_16(rng):
+    return DIAL, {"W": (226, 232, 248), "x": (63, 38, 49), "d": (40, 34, 52), "t": (160, 162, 176),
+                  "s": (112, 112, 126)}, OUTLINE
