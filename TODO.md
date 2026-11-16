@@ -2,7 +2,17 @@
 
 Plan for ProceduralSprites: a program that generates detailed, organic sprites of any size and any kind from code, and bakes them into `atlas.png` with generated metadata.
 
-Nothing is built yet. Tasks are small and independent where possible. Each names the files it owns and ends with a "Done when" check, so agents can take them separately. Milestones are ordered; tasks inside a milestone can run in parallel unless a task says otherwise.
+Tasks are small and independent where possible. Each names the files it owns and ends with a "Done when" check, so agents can take them separately. Milestones are ordered; tasks inside a milestone can run in parallel unless a task says otherwise.
+
+## Status (2026-11-16)
+
+- **M0 done. M1 built and waiting at its review gate.** Sheets to judge: `out/sheets/mushroom_256.png`, `out/sheets/beetle_256.png`.
+- **M3 mostly done** (it does not depend on the gates): `uv run sprites bake` writes `out/atlas.png`, `out/atlas.json` and `out/atlas.gen.hpp` from `content/manifest.toml`. Imports and companion maps are still open.
+- **M2 not started.** Below about 48px the painted resolver only blurs; see `out/sheets/beetle_ladder.png`.
+- 50 tests pass (`uv run pytest`). `uv run sprites verify` confirms two bakes are byte-identical.
+- Nothing is committed yet.
+
+Commands: `sprites list | render | sheet | ladder | debug | bake | verify`.
 
 ## Goal and bar
 
@@ -64,34 +74,34 @@ out/         atlas.png  atlas.json  Atlas.gen.hpp  sheets/   (not committed)
 
 ## M0. Skeleton
 
-- [ ] **Create the project.** `pyproject.toml` with numpy and Pillow pinned, `uv.lock`, `src/procsprites/` package, `sprites` entry point, `.gitignore` covering `out/` and caches, `git init`. Done when `uv run sprites --help` prints the command list.
-- [ ] **Test harness.** `tests/` with pytest and a `uv run pytest` path. Done when one placeholder test passes.
-- [ ] **Hash generator.** `core/rng.py`: splitmix64-style generator with named sub-streams, `float`, `int`, `choice`, `gauss`, `on_disc`. Done when a golden-value test pins the first 16 outputs of three seeds.
-- [ ] **Sheet writer, minimal.** `lint/sheets.py`: tile images onto a labelled background at an integer scale. Needed by every later review. Done when `sprites sheet` writes a PNG grid from a list of images.
+- [x] **Create the project.** `pyproject.toml` with numpy and Pillow pinned, `uv.lock`, `src/procsprites/` package, `sprites` entry point, `.gitignore` covering `out/` and caches, `git init`. Done when `uv run sprites --help` prints the command list.
+- [x] **Test harness.** `tests/` with pytest and a `uv run pytest` path. Done when one placeholder test passes.
+- [x] **Hash generator.** `core/rng.py`: splitmix64-style generator with named sub-streams, `float`, `int`, `choice`, `gauss`, `on_disc`. Done when a golden-value test pins the first 16 outputs of three seeds. *The test pins the first 4 outputs of three seeds, not 16.*
+- [x] **Sheet writer, minimal.** `lint/sheets.py`: tile images onto a labelled background at an integer scale. Needed by every later review. Done when `sprites sheet` writes a PNG grid from a list of images.
 
 ## M1. Beauty slice (review gate)
 
 The main risk is whether the renderer looks good. This milestone proves it on two subjects before anything else is built. Subjects: one mushroom and one beetle, 256×256, painted style.
 
-- [ ] **Colour.** `core/color.py`: sRGB, linear and OKLab conversions as numpy functions; `ramp(base, n)` ported from `sprite_kit.py`; a continuous ramp lookup `tone(base, light)` for painted output. Done when the ported `ramp` reproduces `sprite_kit.ramp` exactly for ten test colours.
-- [ ] **Noise.** `core/noise.py`: gradient noise, fBm, ridged noise, Worley cells, each with a tileable variant and an integer seed. Done when tileable variants match at opposite edges to within 1e-6 and golden hashes pin each function.
-- [ ] **Distance shapes.** `core/sdf.py`: circle, ellipse, box, rounded box, capsule, tapered capsule, polygon, and a variable-radius curve; smooth union, subtract and intersect; mirror, radial repeat, domain warp. Each evaluates on a numpy grid and exposes a bounding box so it is only evaluated where it can matter. Done when unit tests check signs and distances at known points for every shape.
-- [ ] **Curves.** `core/curves.py`: Catmull-Rom and cubic Bézier with arc-length parameterisation, tangents and normals. Done when arc-length sampling is uniform to within 1 percent on a test curve.
-- [ ] **Height profiles.** `form/profile.py`: flat, dome, bevel, ridge, tube, each mapping edge distance to height. Done when a rendered height sheet shows the five profiles on a disc.
-- [ ] **Surface buffer.** `core/gbuffer.py`: per-pixel coverage, height, normal, material id, part id, part coordinates (along and across), edge distance, glow. Parts composite by height with soft blending where a smooth join is requested. Done when debug views of each channel can be written as images.
-- [ ] **Parts and scenes.** `form/part.py`, `form/scene.py`: a part is shape + profile + material + detail stack + priority; a scene holds parts, supports mirror with asymmetry jitter, and rasterises to a surface buffer at any resolution. Done when a three-part test scene renders at 64, 256 and 1024 with identical framing.
-- [ ] **Materials.** `shade/material.py`: base colour, roughness, shine, metal, translucency, glow, tone count. Presets: matte, glossy, metal, translucent, glowing. Done when a material-ball sheet shows the five presets on a dome.
-- [ ] **Lighting.** `shade/light.py`: key light, fill, cool rim; shadows cast across the height field toward the light; ambient occlusion from the height field; highlights per material; light wrap and back tint for translucent materials; glow that spills onto neighbours. Light indexes the ramp, it does not multiply RGB. Done when a sphere-on-slab test shows a cast shadow, contact darkening and a rim.
-- [ ] **Surface detail as bumps.** `shade/detail.py`: ridges along a part, scales, pores, grain, scratches, hammer marks, each perturbing height before normals are computed, each with a size in sprite units. Done when a sheet shows each detail on a lit dome and it reads as relief.
-- [ ] **Painted resolver.** `resolve/painted.py`: supersample, resolve to straight-alpha RGBA with clean edges, optional tinted outline. Done when edges show no stair-stepping at 256px and no dark fringe on a light background.
-- [ ] **Authoring API.** `@sprite(id, sizes, variants)` decorator and a registry in `form/scene.py`. Done when the two subjects are each under 60 lines of definition.
-- [ ] **Subjects.** `content/demo/mushroom.py`, `content/demo/beetle.py`. Done when `sprites sheet demo --size 256 --seeds 1..16` writes two sheets of 16 variants.
+- [x] **Colour.** `core/color.py`: sRGB, linear and OKLab conversions as numpy functions; `ramp(base, n)` ported from `sprite_kit.py`; a continuous ramp lookup `tone(base, light)` for painted output. Done when the ported `ramp` reproduces `sprite_kit.ramp` exactly for ten test colours.
+- [x] **Noise.** `core/noise.py`: gradient noise, fBm, ridged noise, Worley cells, each with a tileable variant and an integer seed. Done when tileable variants match at opposite edges to within 1e-6 and golden hashes pin each function.
+- [x] **Distance shapes.** `core/sdf.py`: circle, ellipse, box, rounded box, capsule, tapered capsule, polygon, and a variable-radius curve; smooth union, subtract and intersect; mirror, radial repeat, domain warp. Each evaluates on a numpy grid and exposes a bounding box so it is only evaluated where it can matter. Done when unit tests check signs and distances at known points for every shape. *Radial repeat is not written yet; lathe (solid of revolution) and leaf were added.*
+- [x] **Curves.** `core/curves.py`: Catmull-Rom and cubic Bézier with arc-length parameterisation, tangents and normals. Done when arc-length sampling is uniform to within 1 percent on a test curve.
+- [x] **Height profiles.** `form/profile.py`: flat, dome, bevel, ridge, tube, each mapping edge distance to height. Done when a rendered height sheet shows the five profiles on a disc.
+- [x] **Surface buffer.** `core/gbuffer.py`: per-pixel coverage, height, normal, material id, part id, part coordinates (along and across), edge distance, glow. Parts composite by height with soft blending where a smooth join is requested. Done when debug views of each channel can be written as images. *`sprites debug <id>` writes the channel views.*
+- [x] **Parts and scenes.** `form/part.py`, `form/scene.py`: a part is shape + profile + material + detail stack + priority; a scene holds parts, supports mirror with asymmetry jitter, and rasterises to a surface buffer at any resolution. Done when a three-part test scene renders at 64, 256 and 1024 with identical framing.
+- [x] **Materials.** `shade/material.py`: base colour, roughness, shine, metal, translucency, glow, tone count. Presets: matte, glossy, metal, translucent, glowing. Done when a material-ball sheet shows the five presets on a dome.
+- [x] **Lighting.** `shade/light.py`: key light, fill, cool rim; shadows cast across the height field toward the light; ambient occlusion from the height field; highlights per material; light wrap and back tint for translucent materials; glow that spills onto neighbours. Light indexes the ramp, it does not multiply RGB. Done when a sphere-on-slab test shows a cast shadow, contact darkening and a rim.
+- [x] **Surface detail as bumps.** `shade/detail.py`: ridges along a part, scales, pores, grain, scratches, hammer marks, each perturbing height before normals are computed, each with a size in sprite units. Done when a sheet shows each detail on a lit dome and it reads as relief. *Lives in `shade/detail.py` as patterns usable for relief or colour: grain, ridges, rings, stripes, spots, speckle, pores, cracks, facets, dimples, scales, scratches, mottle, lumps.*
+- [x] **Painted resolver.** `resolve/painted.py`: supersample, resolve to straight-alpha RGBA with clean edges, optional tinted outline. Done when edges show no stair-stepping at 256px and no dark fringe on a light background.
+- [x] **Authoring API.** `@sprite(id, sizes, variants)` decorator and a registry in `form/scene.py`. Done when the two subjects are each under 60 lines of definition. *The subjects came out longer than the 60-line target: about 80 lines for the mushroom and 65 for the beetle, because they carry more parts than planned.*
+- [x] **Subjects.** `content/demo/mushroom.py`, `content/demo/beetle.py`. Done when `sprites sheet demo --size 256 --seeds 1..16` writes two sheets of 16 variants.
 - [ ] **Review gate.** The user approves the two sheets, or lists what falls short. Do not start M2 until this is settled.
 
 ## M2. Small sizes (review gate)
 
 - [ ] **Style profiles.** `resolve/style.py`: `tiny` (16 to 24px, Kenney-compatible), `pixel-hd` (32 to 64px), `painted` (96px and up), `relief` (emblems). A profile sets tone count, outline, palette snapping, dither, edge handling. Done when a profile is chosen from size by default and can be forced per sprite.
-- [ ] **Detail budget.** Every detail and part carries a size; anything under 1.5 output pixels is dropped before rasterising. Done when the size ladder shows detail appearing step by step with no noise at 16px.
+- [ ] **Detail budget.** Every detail and part carries a size; anything under 1.5 output pixels is dropped before rasterising. Done when the size ladder shows detail appearing step by step with no noise at 16px. *Partly done: patterns under 1.5 pixels are dropped and tested; whole parts are not dropped yet.*
 - [ ] **Pixel resolver.** `resolve/pixel.py`, working from an 8× surface buffer:
   - coverage by threshold, with thin parts widened to at least one pixel;
   - one material per pixel by majority;
@@ -101,22 +111,22 @@ The main risk is whether the renderer looks good. This milestone proves it on tw
   Done when the beetle and mushroom at 16px pass the `tiny` lint thresholds from M4.
 - [ ] **Key features.** Parts marked `keep=True` (eyes, teeth, gem glints) snap to whole pixels and are never dropped. Done when the beetle's eyes are one clean pixel each at 16px for all 16 seeds.
 - [ ] **Per-size override.** A sprite may supply a hand-drawn character map or a separate definition for a named size. Done when one demo sprite uses a hand-drawn 16px cell and generated larger sizes.
-- [ ] **Size ladder sheet.** `sprites ladder <id>` renders 16, 24, 32, 48, 64, 128, 256 side by side, small sizes shown enlarged. Done when it works for any registered sprite.
+- [x] **Size ladder sheet.** `sprites ladder <id>` renders 16, 24, 32, 48, 64, 128, 256 side by side, small sizes shown enlarged. Done when it works for any registered sprite.
 - [ ] **Reference comparison.** A sheet placing generated 16px sprites among Kenney Tiny Town and Tiny Dungeon tiles. Done when the sheet is written from a path to the Kenney pack.
 - [ ] **Review gate.** The user approves the 16px and 32px results on the comparison sheet.
 
 ## M3. Atlas baker
 
-- [ ] **Manifest.** `content/manifest.toml`: sprite sets, sizes, variant counts, style, layout group, padding. Done when `sprites bake content/manifest.toml` resolves the full list of sprite instances.
-- [ ] **Trim and pivot.** Trim transparent borders, record trim offset, original size and pivot (default: bottom centre for standing sprites, centre for the rest). Done when round-tripping trim data reconstructs the untrimmed image.
-- [ ] **Grid layout.** `atlas/pack.py`: uniform cells with gutters and append-only indices per group. Done when a 16px set lands in an 18px-pitch, 24-column grid matching Mellangan's `cell_position`.
-- [ ] **Packed layout.** MaxRects with a deterministic sort, power-of-two growth, multiple pages on overflow. Done when tests confirm no overlap, everything in bounds, and identical output on repeat runs.
-- [ ] **Lock file.** `atlas/lock.py`: `atlas.lock.json` records page, rectangle, index and content hash per sprite. Existing entries never move; new sprites take free space; `--repack` rebuilds from scratch. Done when adding ten sprites to a baked atlas changes no existing rectangle.
-- [ ] **Edges.** `atlas/bleed.py`: edge extrusion for tiles, transparent padding for sprites, colour bleed into transparent pixels so filtering shows no dark halo. Done when a bilinear-sampled test shows no seam between tiles and no fringe on sprites.
-- [ ] **Exports.** `atlas/export.py`: `atlas.png`, `atlas.json` (documented schema), `Atlas.gen.hpp` with named `constexpr` entries. All three come from the lock file. Done when the header compiles in a one-file test and the JSON validates against its schema.
+- [x] **Manifest.** `content/manifest.toml`: sprite sets, sizes, variant counts, style, layout group, padding. Done when `sprites bake content/manifest.toml` resolves the full list of sprite instances.
+- [x] **Trim and pivot.** Trim transparent borders, record trim offset, original size and pivot (default: bottom centre for standing sprites, centre for the rest). Done when round-tripping trim data reconstructs the untrimmed image.
+- [x] **Grid layout.** `atlas/pack.py`: uniform cells with gutters and append-only indices per group. Done when a 16px set lands in an 18px-pitch, 24-column grid matching Mellangan's `cell_position`.
+- [x] **Packed layout.** MaxRects with a deterministic sort, power-of-two growth, multiple pages on overflow. Done when tests confirm no overlap, everything in bounds, and identical output on repeat runs.
+- [x] **Lock file.** `atlas/lock.py`: `atlas.lock.json` records page, rectangle, index and content hash per sprite. Existing entries never move; new sprites take free space; `--repack` rebuilds from scratch. Done when adding ten sprites to a baked atlas changes no existing rectangle.
+- [x] **Edges.** `atlas/bleed.py`: edge extrusion for tiles, transparent padding for sprites, colour bleed into transparent pixels so filtering shows no dark halo. Done when a bilinear-sampled test shows no seam between tiles and no fringe on sprites.
+- [x] **Exports.** `atlas/export.py`: `atlas.png`, `atlas.json` (documented schema), `Atlas.gen.hpp` with named `constexpr` entries. All three come from the lock file. Done when the header compiles in a one-file test and the JSON validates against its schema. *The header compiles under `g++ -std=c++17 -Wall -Wextra -Werror`. The JSON layout is documented in `atlas/export.py`; there is no machine-readable schema file yet.*
 - [ ] **Imports.** `atlas/imports.py`: bring in external sheets or single cells unchanged, with a recorded source hash, and pin them to fixed rectangles. Done when a Kenney sheet is imported and a hash mismatch fails the bake.
 - [ ] **Companion maps.** Optional normal and glow atlases with the same layout. Done when `--maps normal,glow` writes matching files.
-- [ ] **Verify.** `sprites verify`: bake twice into temporary folders and compare RGBA bytes and PNG bytes. Done when it exits non-zero on any difference.
+- [x] **Verify.** `sprites verify`: bake twice into temporary folders and compare RGBA bytes and PNG bytes. Done when it exits non-zero on any difference.
 
 ## M4. Lint and sheets
 
@@ -171,9 +181,9 @@ One module per kind under `library/`, each a parameterised builder with ranges, 
 
 ## M9. Hardening
 
-- [ ] **Cache.** Per-sprite cache keyed by definition source, seed, size, style and engine version. Done when a warm bake re-renders only changed sprites.
+- [ ] **Cache.** Per-sprite cache keyed by definition source, seed, size, style and engine version. Done when a warm bake re-renders only changed sprites. *Partly done: bakes reuse renders from `.cache/sprites`, but any change to engine or content code invalidates every sprite, not only the changed ones.*
 - [ ] **Parallel bake.** Process pool across sprites with ordered, deterministic assembly. Done when output is identical with 1 and N workers.
-- [ ] **Speed targets** (to be confirmed on this machine once M1 exists): one 256px sprite under 1 second, a cold bake of 1,500 16px sprites under 60 seconds, a warm bake under 5 seconds.
+- [ ] **Speed targets** (to be confirmed on this machine once M1 exists): one 256px sprite under 1 second, a cold bake of 1,500 16px sprites under 60 seconds, a warm bake under 5 seconds. *Partly done: measured at 256px on this machine: beetle 1.0s, mushroom 2.3s. A warm bake of the 36-sprite demo atlas takes 0.7s, a cold one 44s.*
 - [ ] **Cross-platform check.** Bake on Windows, Linux and macOS and compare hashes; list any functions that diverge and replace them. Done when hashes match or the divergent cases are documented.
 - [ ] **Docs.** `README.md`: quick start, how to write a sprite, how to add a kind, the atlas schema.
 

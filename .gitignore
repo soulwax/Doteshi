@@ -1,4 +1,5 @@
 out/
+!out/sample.png
 .venv/
 __pycache__/
 *.pyc
