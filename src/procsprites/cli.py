@@ -73,7 +73,7 @@ def cmd_ladder(args):
         images = []
         for s in sizes:
             im = api.render(id, s, args.seed, args.style)
-            k = max(1, top // s) if s < 96 else 1
+            k = max(1, 192 // s) if s < 96 else 1
             images.append(im.resize((im.width * k, im.height * k), 0) if k > 1 else im)
         _save(sheets.sheet(images, [f"{s}px" for s in sizes], len(sizes), title=f"{id}  seed {args.seed}"),
               Path(args.out) / f"{id}_ladder.png")
@@ -202,7 +202,7 @@ def main(argv=None):
 
     l = sub.add_parser("ladder", help="one sprite at a run of sizes, side by side")
     l.add_argument("sprite", nargs="+")
-    l.add_argument("--sizes", default="16,24,32,48,64,128,256")
+    l.add_argument("--sizes", default="16,32,48,64,128,256")
     l.add_argument("--seed", type=int, default=1)
     l.add_argument("--style", default=None)
     l.add_argument("--out", default="out/sheets")

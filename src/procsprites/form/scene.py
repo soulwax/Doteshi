@@ -9,7 +9,7 @@ from . import profile as profiles
 
 MAX_SLOPE = 7.0       # about 82 degrees: the steepest a surface may tilt away from the viewer
 MIN_FEATURE = 1.5     # patterns finer than this many output pixels are dropped
-MIN_PART = 1.5        # so are whole parts no larger than this, unless marked keep
+MIN_PART = 1.0        # so are whole parts no larger than this, unless marked keep
 MIN_KEPT = 1.6        # patterns marked keep are coarsened until their features are this many pixels
 
 

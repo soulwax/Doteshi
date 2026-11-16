@@ -175,7 +175,15 @@ def resolve(gb, style, env=None):
                                               lighter, darker), wt)
     ws = np.maximum(wt.sum(axis=-1), 1e-9)[..., None]
     base = (labb * wt[..., None]).sum(axis=2) / ws
-    lit = (_blocks(rgb, h, w, ss) * wt[..., None]).sum(axis=2) / ws
+    rgbb = _blocks(rgb, h, w, ss)
+    lit = (rgbb * wt[..., None]).sum(axis=2) / ws
+    height = (_blocks(gb.H, h, w, ss) * wt).sum(axis=-1) / ws[..., 0]
+    # A highlight smaller than a pixel would average away; remember how far the brightest samples stand out.
+    lum = rgbb @ np.array([0.2126, 0.7152, 0.0722])
+    peak = np.where(wt > 0, lum, 0.0)
+    peak = np.sort(peak, axis=-1)[..., -max(2, ss * ss // 10):].mean(axis=-1)
+    spark = np.clip(np.cbrt(np.clip(peak, 0, 1)) - np.cbrt(np.clip(lit @ np.array([0.2126, 0.7152, 0.0722]), 0, 1))
+                    - 0.08, 0.0, 0.5)
 
     # Key features land on the pixel under their centre, whatever their size.
     keep = np.zeros((h, w), bool)
@@ -198,6 +206,15 @@ def resolve(gb, style, env=None):
         if cov[y, x] < 0.05:
             base[y, x], lit[y, x], owner[y, x] = base[y - 1, x], lit[y - 1, x], owner[y - 1, x]
     solid |= hole
+    # One-pixel notches in the silhouette are filled, one-pixel burrs shaved off: edges step evenly.
+    l, r_, u, d = _around(solid, False)
+    count = l.astype(int) + r_ + u + d
+    notch = ~solid & (count >= 3) & (cov > 0.2)
+    for y, x in zip(*np.nonzero(notch)):
+        yy, xx = (y - 1, x) if y > 0 and solid[y - 1, x] else (y, x - 1) if x > 0 and solid[y, x - 1] else (y + 1, x)
+        base[y, x], lit[y, x], owner[y, x], height[y, x] = base[yy, xx], lit[yy, xx], owner[yy, xx], height[yy, xx]
+    solid |= notch
+    solid &= ~((count <= 1) & (cov < 0.75) & ~thin & ~keep & ~lines)
     if not solid.any():
         m = style.inset
         return Image.new("RGBA", (w + 2 * m, h + 2 * m), (0, 0, 0, 0))
@@ -210,16 +227,28 @@ def resolve(gb, style, env=None):
     if style.snap:
         ramp = _snap(ramp, style.snap)
     ramp_lab = _to_lab(ramp)
-    light = linear_to_oklab(np.maximum(lit[solid], 0.0))[:, 0] + style.lift
+    light = linear_to_oklab(np.maximum(lit[solid], 0.0))[:, 0] + style.lift + style.glint * spark[solid]
     if style.dither:
         ys, xs = np.nonzero(solid)
         light = light + style.dither * 0.1 * (BAYER[ys % 4, xs % 4] - 0.5)
     pick = np.argmin(np.abs(ramp_lab[:, 0].reshape(len(centres), T)[labels] - light[:, None]), axis=1)
     pick[lines[solid]] = int(np.argmin(np.abs(levels)))          # lines take their base colour, unlit
-    index = np.full((h, w), -1, np.int64)
-    index[solid] = labels * T + pick
     family = np.full((h, w), -1, np.int64)
     family[solid] = labels
+    tones = np.zeros((h, w), np.int64)
+    tones[solid] = pick
+    if style.contour:
+        # Where one form passes behind another of the same colour, a darker line keeps them apart.
+        crease = np.zeros((h, w), bool)
+        gap = style.contour_gap * gb.px
+        for dy, dx in N4:
+            other = shift(owner, dx, dy, 0)
+            crease |= (solid & shift(solid, dx, dy, False) & (other != owner) & (shift(family, dx, dy, -1) == family)
+                       & (shift(height, dx, dy, 0.0) - height > gap))
+        crease &= ~lines & ~keep
+        tones[crease] = np.maximum(tones[crease] - style.contour, 0)
+    index = np.full((h, w), -1, np.int64)
+    index[solid] = family[solid] * T + tones[solid]
 
     # 4. Cleanup.
     _reduce(index, ramp_lab, style.colors, keep)
