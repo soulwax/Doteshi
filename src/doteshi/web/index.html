@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>doteshi</title>
+<style>
+  :root {
+    --bg: #f5f5f7; --panel: #ffffff; --ink: #1d1d1f; --soft: #6e6e73; --faint: #a1a1a6;
+    --line: rgba(0, 0, 0, .08); --fill: rgba(0, 0, 0, .05); --fill-strong: rgba(0, 0, 0, .09);
+    --accent: #e0452c; --accent-ink: #ffffff; --bar: rgba(245, 245, 247, .72);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 24px rgba(0, 0, 0, .06);
+    --check-a: #ececf0; --check-b: #fafafc;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101012; --panel: #1c1c1f; --ink: #f5f5f7; --soft: #a1a1a6; --faint: #6e6e73;
+      --line: rgba(255, 255, 255, .1); --fill: rgba(255, 255, 255, .07); --fill-strong: rgba(255, 255, 255, .13);
+      --accent: #ff6a4d; --accent-ink: #1a0b07; --bar: rgba(16, 16, 18, .72);
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
+      --check-a: #26262a; --check-b: #2e2e33;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+
+  header {
+    position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 16px;
+    height: 56px; padding: 0 20px; background: var(--bar);
+    backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; letter-spacing: -.01em; }
+  .brand svg { width: 26px; height: 26px; border-radius: 7px; }
+  .brand small { color: var(--faint); font-weight: 400; font-size: 13px; }
+  header .spacer { flex: 1; }
+
+  .seg { display: inline-flex; padding: 2px; border-radius: 9px; background: var(--fill); gap: 2px; flex-wrap: wrap; }
+  .seg button { padding: 5px 12px; border-radius: 7px; color: var(--soft); font-weight: 500; white-space: nowrap;
+                transition: background .15s, color .15s; }
+  .seg button:hover { color: var(--ink); }
+  .seg button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+
+  .btn { padding: 7px 14px; border-radius: 980px; background: var(--fill); font-weight: 500; transition: background .15s; }
+  .btn:hover { background: var(--fill-strong); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); }
+  .btn.primary:hover { filter: brightness(1.06); }
+  .btn:disabled { opacity: .5; cursor: default; }
+
+  main { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: calc(100% - 56px); }
+  aside { border-right: 1px solid var(--line); padding: 14px 10px; overflow-y: auto; }
+  aside input {
+    width: 100%; padding: 7px 12px; margin-bottom: 10px; border-radius: 9px; border: 0;
+    background: var(--fill); color: var(--ink); font: inherit;
+  }
+  aside input::placeholder { color: var(--faint); }
+  .item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 8px; border-radius: 9px; text-align: left; }
+  .item:hover { background: var(--fill); }
+  .item[aria-current="true"] { background: var(--accent); color: var(--accent-ink); }
+  .item img { width: 32px; height: 32px; object-fit: contain; image-rendering: pixelated; flex: none; }
+  .item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .none { color: var(--faint); padding: 8px; }
+
+  .work { padding: 22px 26px 40px; max-width: 1180px; width: 100%; margin: 0 auto; }
+  h1 { font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin: 0; }
+  h2 { font-size: 13px; font-weight: 600; color: var(--soft); margin: 26px 0 10px; }
+  .head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .head p { margin: 0; color: var(--soft); }
+
+  .card { background: var(--panel); border-radius: 18px; box-shadow: var(--shadow); }
+  .stage { position: relative; height: min(52vh, 460px); min-height: 280px; display: grid; place-items: center; overflow: hidden; }
+  .stage img { image-rendering: pixelated; max-width: none; transition: opacity .15s; }
+  .stage.loading img { opacity: .35; }
+  .stage .note { position: absolute; left: 16px; bottom: 12px; font-size: 12px; color: var(--soft);
+                 background: var(--bar); padding: 3px 9px; border-radius: 980px; backdrop-filter: blur(12px); }
+  .ground-checker { background: repeating-conic-gradient(var(--check-a) 0% 25%, var(--check-b) 0% 50%) 50% / 20px 20px; }
+  .ground-dark { background: #23252b; } .ground-light { background: #f4f1ea; } .ground-grass { background: #689e54; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; padding: 14px 4px 0; }
+  .field { display: flex; align-items: center; gap: 9px; }
+  .field > label, .field > span.l { color: var(--soft); font-size: 13px; }
+  .stepper { display: inline-flex; align-items: center; background: var(--fill); border-radius: 9px; }
+  .stepper button { width: 30px; height: 30px; font-size: 17px; color: var(--soft); border-radius: 9px; }
+  .stepper button:hover { color: var(--ink); background: var(--fill-strong); }
+  .stepper output { min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 500; }
+  .swatches { display: inline-flex; gap: 6px; }
+  .swatches button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); }
+  .swatches button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--accent); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
+  .tile { background: var(--panel); border-radius: 14px; padding: 10px 8px 7px; text-align: center; color: var(--soft);
+          font-size: 12px; box-shadow: var(--shadow); transition: transform .12s; }
+  .tile:hover { transform: translateY(-2px); }
+  .tile[aria-pressed="true"] { box-shadow: var(--shadow), 0 0 0 2px var(--accent); color: var(--ink); }
+  .tile img { display: block; margin: 0 auto 6px; width: 64px; height: 64px; object-fit: contain; image-rendering: pixelated; }
+  .snippet { display: flex; gap: 10px; align-items: flex-start; }
+  pre { margin: 0; flex: 1; padding: 12px 14px; border-radius: 12px; background: var(--fill); overflow-x: auto;
+        font: 12.5px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+
+  .atlas { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 18px; align-items: start; }
+  .sheet { position: relative; padding: 16px; overflow: auto; max-height: 72vh; }
+  .sheet .frame { position: relative; margin: 0 auto; }
+  .sheet img { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+  .sheet .box { position: absolute; border: 1.5px solid var(--accent); border-radius: 3px; pointer-events: none;
+                box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .28); }
+  .side { padding: 16px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin-bottom: 14px; }
+  .stats div { font-size: 12px; color: var(--soft); }
+  .stats b { display: block; font-size: 19px; font-weight: 600; color: var(--ink); letter-spacing: -.01em; }
+  .picked { font-size: 13px; color: var(--soft); min-height: 58px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .picked b { color: var(--ink); font-weight: 600; display: block; }
+  .links { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+  .links a { color: var(--accent); text-decoration: none; font-size: 13px; }
+  .links a:hover { text-decoration: underline; }
+  .empty { padding: 60px 20px; text-align: center; color: var(--soft); }
+  .empty b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 4px; }
+
+  .banner { margin: 0 0 16px; padding: 12px 16px; border-radius: 12px; background: rgba(224, 69, 44, .12);
+            color: var(--ink); white-space: pre-wrap; font: 12.5px/1.5 ui-monospace, Menlo, Consolas, monospace; }
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); padding: 9px 18px; border-radius: 980px;
+           background: var(--ink); color: var(--bg); font-weight: 500; box-shadow: var(--shadow); z-index: 9; }
+
+  @media (max-width: 820px) {
+    main { grid-template-columns: 1fr; }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); display: flex; gap: 6px; overflow-x: auto; padding: 10px; }
+    aside input { display: none; } .item { width: auto; flex: none; }
+    .atlas { grid-template-columns: 1fr; } .work { padding: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 256 256" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4603f"/><stop offset="1" stop-color="#c22d1c"/></linearGradient></defs><rect width="256" height="256" rx="58" fill="url(#g)"/><g fill="#fff4e0"><rect x="96" y="40" width="64" height="16" rx="5"/><rect x="64" y="56" width="128" height="16" rx="5"/><rect x="48" y="72" width="160" height="16" rx="5"/><rect x="32" y="88" width="192" height="32" rx="6"/><rect x="48" y="120" width="160" height="14" rx="5" fill-opacity=".55"/><rect x="96" y="134" width="64" height="66" rx="5"/><rect x="80" y="200" width="96" height="16" rx="5"/></g></svg>
+    doteshi <small>ドット絵師</small>
+  </div>
+  <div class="spacer"></div>
+  <div class="seg" id="tabs" role="tablist">
+    <button data-tab="sprites" aria-pressed="true">Sprites</button>
+    <button data-tab="atlas" aria-pressed="false">Atlas</button>
+  </div>
+</header>
+
+<main id="view-sprites">
+  <aside>
+    <input id="search" type="search" placeholder="Search sprites" aria-label="Search sprites">
+    <div id="list"></div>
+  </aside>
+  <section class="work">
+    <div id="error" class="banner" hidden></div>
+    <div class="head">
+      <h1 id="title">&nbsp;</h1>
+      <p id="subtitle"></p>
+      <div style="flex:1"></div>
+      <button class="btn" id="shuffle">Shuffle</button>
+      <button class="btn primary" id="download">Download PNG</button>
+    </div>
+    <div class="card stage ground-checker" id="stage">
+      <img id="preview" alt="">
+      <div class="note" id="note"></div>
+    </div>
+    <div class="controls">
+      <div class="field"><span class="l">Size</span><div class="seg" id="sizes"></div></div>
+      <div class="field"><span class="l">Style</span><div class="seg" id="styles"></div></div>
+      <div class="field"><span class="l">Seed</span>
+        <div class="stepper"><button id="seed-down" aria-label="Previous seed">−</button><output id="seed">0</output><button id="seed-up" aria-label="Next seed">+</button></div>
+      </div>
+      <div class="field"><span class="l">Ground</span>
+        <div class="swatches" id="grounds">
+          <button data-ground="checker" title="Transparent" class="ground-checker" aria-pressed="true"></button>
+          <button data-ground="dark" title="Dark" class="ground-dark" aria-pressed="false"></button>
+          <button data-ground="light" title="Light" class="ground-light" aria-pressed="false"></button>
+          <button data-ground="grass" title="Grass" class="ground-grass" aria-pressed="false"></button>
+        </div>
+      </div>
+    </div>
+    <h2>Variants</h2>
+    <div class="grid" id="variants"></div>
+    <h2>Sizes</h2>
+    <div class="grid" id="ladder"></div>
+    <h2>Add to the atlas</h2>
+    <div class="snippet"><pre id="snippet"></pre><button class="btn" id="copy">Copy</button></div>
+  </section>
+</main>
+
+<main id="view-atlas" hidden style="grid-template-columns: minmax(0, 1fr)">
+  <section class="work">
+    <div class="head">
+      <h1>Atlas</h1>
+      <p id="atlas-sub"></p>
+      <div style="flex:1"></div>
+      <div class="seg" id="pages" hidden></div>
+      <button class="btn" id="repack" title="Discard saved placements and lay everything out again">Repack</button>
+      <button class="btn primary" id="bake">Bake</button>
+    </div>
+    <div id="atlas-error" class="banner" hidden></div>
+    <div class="card empty" id="atlas-empty" hidden><b>No atlas yet</b>Bake the manifest to pack every sprite it lists into one image.</div>
+    <div class="atlas" id="atlas-body" hidden>
+      <div class="card sheet ground-checker"><div class="frame" id="frame"><img id="atlas-img" alt="The baked atlas"><div class="box" id="box" hidden></div></div></div>
+      <div class="card side">
+        <div class="stats" id="stats"></div>
+        <div class="picked" id="picked">Point at a sprite to see where it sits.</div>
+        <div class="links" id="links"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const SIZES = [16, 32, 48, 64, 128, 256];
+const STYLE_NAMES = { "": "Auto", "tiny": "Tiny", "pixel-hd": "Pixel HD", "painted": "Painted", "relief": "Relief" };
+const state = { sprites: [], id: null, size: 32, seed: 1, style: "", ground: "checker", atlas: null, page: 0 };
+
+const url = (id, size, seed, style) =>
+  `/api/render?id=${encodeURIComponent(id)}&size=${size}&seed=${seed}&style=${encodeURIComponent(style || "")}&v=${state.version || ""}`;
+
+function toast(text) {
+  const t = $("toast"); t.textContent = text; t.hidden = false;
+  clearTimeout(toast.timer); toast.timer = setTimeout(() => t.hidden = true, 2200);
+}
+function segment(el, options, current, pick) {
+  el.replaceChildren(...options.map(([value, label]) => {
+    const b = document.createElement("button");
+    b.textContent = label; b.setAttribute("aria-pressed", String(value === current));
+    b.onclick = () => pick(value);
+    return b;
+  }));
+}
+async function getJSON(path, options) {
+  const r = await fetch(path, options);
+  const data = await r.json().catch(() => ({ error: `The server answered ${r.status}.` }));
+  if (!r.ok) throw new Error(data.error || `The server answered ${r.status}.`);
+  return data;
+}
+
+// ---- Sprites ----
+async function loadSprites(force) {
+  try {
+    const data = await getJSON("/api/sprites");
+    $("error").hidden = !data.error; $("error").textContent = data.error ? "A sprite file failed to load:\n" + data.error : "";
+    const fresh = data.version !== state.version || force;        // only redraw when definitions changed
+    state.sprites = data.sprites; state.styles = data.styles; state.version = data.version;
+    if (!state.sprites.find(s => s.id === state.id)) state.id = (state.sprites.find(s => !s.id.startsWith("study.")) || state.sprites[0] || {}).id || null;
+    if (fresh) { drawList(); draw(); }
+  } catch (e) { $("error").hidden = false; $("error").textContent = "Could not reach the doteshi server. Is `doteshi serve` still running?"; }
+}
+function drawList() {
+  const q = $("search").value.trim().toLowerCase();
+  const shown = state.sprites.filter(s => s.id.toLowerCase().includes(q));
+  $("list").replaceChildren(...shown.map(s => {
+    const b = document.createElement("button");
+    b.className = "item"; b.setAttribute("aria-current", String(s.id === state.id));
+    const img = new Image(); img.src = url(s.id, 32, 1, ""); img.alt = "";
+    const span = document.createElement("span"); span.textContent = s.id;
+    b.append(img, span); b.onclick = () => { state.id = s.id; drawList(); draw(); };
+    return b;
+  }));
+  if (!shown.length) { const d = document.createElement("div"); d.className = "none"; d.textContent = state.sprites.length ? "No sprite matches." : "No sprites registered yet."; $("list").append(d); }
+}
+function tile(src, label, pressed, pick) {
+  const b = document.createElement("button");
+  b.className = "tile"; b.setAttribute("aria-pressed", String(pressed));
+  const img = new Image(); img.src = src; img.alt = "";
+  b.append(img, document.createTextNode(label)); b.onclick = pick;
+  return b;
+}
+function layout() {
+  // Show the sprite at the largest whole-number zoom that fits, so every pixel stays square.
+  const stage = $("stage"), img = $("preview");
+  if (!img.naturalWidth) return;
+  const zoom = Math.max(1, Math.floor(Math.min((stage.clientWidth - 48) / img.naturalWidth, (stage.clientHeight - 48) / img.naturalHeight)));
+  img.style.width = img.naturalWidth * zoom + "px";
+  $("note").textContent = `${state.info} · shown at ${zoom}×`;
+}
+function draw() {
+  const s = state.sprites.find(x => x.id === state.id);
+  $("title").textContent = s ? s.id : "No sprites";
+  if (!s) { $("subtitle").textContent = "Add a definition to the content folder and it will appear here."; return; }
+  const w = Math.round(state.size * s.aspect);
+  $("subtitle").textContent = `${w} × ${state.size} pixels · seed ${state.seed}`;
+  segment($("sizes"), SIZES.map(v => [v, String(v)]), state.size, v => { state.size = v; draw(); });
+  segment($("styles"), ["", ...state.styles].map(v => [v, STYLE_NAMES[v] || v]), state.style, v => { state.style = v; draw(); });
+  $("seed").textContent = state.seed;
+
+  const stage = $("stage"), img = $("preview"), src = url(s.id, state.size, state.seed, state.style);
+  if (src !== state.shown) {
+  stage.classList.add("loading");
+  fetch(src).then(async r => {
+    if (!r.ok) throw new Error((await r.json()).error);
+    const used = r.headers.get("X-Style"), took = Number(r.headers.get("X-Seconds"));
+    const blob = await r.blob();
+    if (src !== url(state.id, state.size, state.seed, state.style)) return;      // a newer request won
+    img.onload = () => {
+      state.shown = src; state.info = `${STYLE_NAMES[used] || used} · ${took < 0.05 ? "instant" : took.toFixed(1) + " s"}`;
+      stage.classList.remove("loading"); layout();
+    };
+    img.src = URL.createObjectURL(blob);
+    $("download").onclick = () => { const a = document.createElement("a"); a.href = img.src; a.download = `${s.id}_${state.size}_${state.seed}.png`; a.click(); };
+  }).catch(e => { stage.classList.remove("loading"); $("note").textContent = "Could not render: " + e.message; });
+  }
+
+  const small = Math.min(state.size, 64), first = Math.max(0, state.seed - (state.seed % 12));
+  $("variants").replaceChildren(...Array.from({ length: 12 }, (_, i) => first + i).map(seed =>
+    tile(url(s.id, small, seed, state.style), `seed ${seed}`, seed === state.seed, () => { state.seed = seed; draw(); })));
+  $("ladder").replaceChildren(...SIZES.map(size =>
+    tile(url(s.id, size, state.seed, state.style), `${size} px`, size === state.size, () => { state.size = size; draw(); })));
+  $("snippet").textContent = `[[sprite]]\nid = "${s.id}"\nsize = ${state.size}\nseeds = [${state.seed}]` + (state.style ? `\nstyle = "${state.style}"` : "");
+}
+$("search").oninput = drawList;
+$("seed-up").onclick = () => { state.seed++; draw(); };
+$("seed-down").onclick = () => { state.seed = Math.max(0, state.seed - 1); draw(); };
+$("shuffle").onclick = () => { state.seed = Math.floor(Math.random() * 10000); draw(); };
+$("copy").onclick = () => navigator.clipboard.writeText($("snippet").textContent).then(() => toast("Copied. Paste it into the manifest."), () => toast("Could not copy. Select the text instead."));
+$("grounds").querySelectorAll("button").forEach(b => b.onclick = () => {
+  $("stage").classList.replace(`ground-${state.ground}`, `ground-${b.dataset.ground}`);
+  state.ground = b.dataset.ground;
+  $("grounds").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+});
+
+// ---- Atlas ----
+async function loadAtlas() {
+  $("atlas-error").hidden = true;
+  let a;
+  try { a = await getJSON("/api/atlas"); } catch (e) { $("atlas-error").hidden = false; $("atlas-error").textContent = e.message; return; }
+  state.atlas = a;
+  $("atlas-empty").hidden = a.exists; $("atlas-body").hidden = !a.exists;
+  $("atlas-sub").textContent = a.exists ? `${a.sprites.length} sprites on ${a.pages.length} page${a.pages.length > 1 ? "s" : ""}` : "";
+  if (!a.exists) return;
+  state.page = Math.min(state.page, a.pages.length - 1);
+  $("pages").hidden = a.pages.length < 2;
+  segment($("pages"), a.pages.map((_, i) => [i, `Page ${i + 1}`]), state.page, i => { state.page = i; loadAtlas(); });
+  const page = a.pages[state.page], frame = $("frame");
+  frame.style.aspectRatio = `${page.w} / ${page.h}`; frame.style.maxWidth = page.w * 2 + "px";
+  $("atlas-img").src = `/api/atlas/file/${page.file}?v=${a.stamp}`;
+  const used = a.sprites.reduce((n, s) => n + s.w * s.h, 0), area = a.pages.reduce((n, p) => n + p.w * p.h, 0);
+  $("stats").innerHTML = "";
+  for (const [value, label] of [[a.sprites.length, "sprites"], [`${page.w}×${page.h}`, "page size"], [Math.round(100 * used / area) + "%", "pixels used"], [a.meta.layout, "layout"]]) {
+    const d = document.createElement("div"), b = document.createElement("b"); b.textContent = value; d.append(b, label); $("stats").append(d);
+  }
+  $("links").replaceChildren(...a.files.map(f => { const l = document.createElement("a"); l.href = `/api/atlas/file/${f}`; l.download = f; l.textContent = "Download " + f; return l; }));
+}
+$("frame").onmousemove = e => {
+  const a = state.atlas; if (!a || !a.exists) return;
+  const r = $("frame").getBoundingClientRect(), page = a.pages[state.page], k = r.width / page.w;
+  const x = (e.clientX - r.left) / k, y = (e.clientY - r.top) / k;
+  const hit = a.sprites.find(s => s.page === state.page && x >= s.x && x < s.x + s.w && y >= s.y && y < s.y + s.h);
+  const box = $("box"); box.hidden = !hit;
+  if (!hit) { $("picked").textContent = "Point at a sprite to see where it sits."; return; }
+  Object.assign(box.style, { left: hit.x * k + "px", top: hit.y * k + "px", width: hit.w * k + "px", height: hit.h * k + "px" });
+  $("picked").innerHTML = ""; const b = document.createElement("b"); b.textContent = hit.name;
+  $("picked").append(b, `at ${hit.x}, ${hit.y} · ${hit.w} × ${hit.h} · pivot ${hit.pivot[0]}, ${hit.pivot[1]}`);
+};
+$("frame").onmouseleave = () => { $("box").hidden = true; };
+$("frame").onclick = () => {
+  const name = $("picked").querySelector("b"); if (!name) return;
+  const s = state.atlas.sprites.find(x => x.name === name.textContent); if (!s) return;
+  Object.assign(state, { id: s.id, size: s.size, seed: s.variant }); show("sprites");
+};
+async function bake(repack) {
+  const b = $("bake"), r = $("repack"); b.disabled = r.disabled = true; b.textContent = "Baking…"; $("atlas-error").hidden = true;
+  try {
+    const st = await getJSON("/api/bake" + (repack ? "?repack=1" : ""), { method: "POST" });
+    toast(`Baked ${st.sprites} sprites in ${st.seconds.toFixed(1)} s: ${st.new} new, ${st.kept} kept in place.`);
+    await loadAtlas();
+  } catch (e) { $("atlas-error").hidden = false; $("atlas-error").textContent = "The bake failed: " + e.message; }
+  b.disabled = r.disabled = false; b.textContent = "Bake";
+}
+$("bake").onclick = () => bake(false);
+$("repack").onclick = () => bake(true);
+
+// ---- Tabs ----
+function show(tab) {
+  $("view-sprites").hidden = tab !== "sprites"; $("view-atlas").hidden = tab !== "atlas";
+  $("tabs").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.tab === tab)));
+  history.replaceState(null, "", "#" + tab);
+  if (tab === "atlas") loadAtlas(); else loadSprites(true);
+}
+$("tabs").querySelectorAll("button").forEach(b => b.onclick = () => show(b.dataset.tab));
+window.addEventListener("focus", () => { if (!$("view-sprites").hidden) loadSprites(); });   // pick up edited definitions
+window.addEventListener("resize", layout);
+show(location.hash === "#atlas" ? "atlas" : "sprites");
+</script>
+</body>
+</html>

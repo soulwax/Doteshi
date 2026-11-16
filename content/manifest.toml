@@ -1,5 +1,7 @@
-# The demo atlas: the two M1 subjects at mixed sizes.
-# Bake with:  uv run sprites bake
+# The demo atlas. Bake with:  uv run doteshi bake
+#
+# The focus is 16 to 64 pixels: 16px sprites use the "tiny" profile, 32 to 64px use "pixel-hd".
+# A few large painted sprites show that the same definitions scale up.
 
 [atlas]
 name = "atlas"
@@ -11,44 +13,55 @@ content = "demo"
 
 [[sprite]]
 id = "mushroom"
-sizes = [128, 64]
-variants = 8
+sizes = [16, 32, 48, 64]
+variants = 6
 pivot = "bottom"
 
 [[sprite]]
+id = "beetle"
+sizes = [16, 32, 48, 64]
+variants = 6
+pivot = "center"
+
+[[sprite]]
+id = "tree"
+sizes = [16, 32, 48, 64]
+variants = 6
+pivot = "bottom"
+
+[[sprite]]
+id = "flower"
+sizes = [16, 32, 48, 64]
+variants = 6
+pivot = "bottom"
+
+# The 16px gem is a hand-drawn cell (see demo/gem.py); larger sizes are generated.
+[[sprite]]
+id = "gem"
+sizes = [16, 32, 48, 64]
+variants = 6
+pivot = "center"
+
+[[sprite]]
 id = "mushroom"
-size = 256
+size = 128
 seeds = [11, 16]
 pivot = "bottom"
 
 [[sprite]]
 id = "beetle"
-sizes = [128, 64]
-variants = 8
-pivot = "center"
-
-[[sprite]]
-id = "beetle"
-size = 256
+size = 128
 seeds = [3, 13]
 pivot = "center"
 
-# Small sizes go through the pixel resolver: pixel-hd at 32px, tiny at 16px.
 [[sprite]]
-id = "mushroom"
-sizes = [32, 16]
-variants = 8
+id = "tree"
+size = 128
+seeds = [1, 5]
 pivot = "bottom"
 
 [[sprite]]
-id = "beetle"
-sizes = [32, 16]
-variants = 8
-pivot = "center"
-
-# The 16px gem is a hand-drawn cell (see demo/gem.py); the 64px one is generated.
-[[sprite]]
-id = "gem"
-sizes = [64, 16]
-variants = 6
-pivot = "center"
+id = "flower"
+size = 128
+seeds = [3, 6]
+pivot = "bottom"

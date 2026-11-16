@@ -62,6 +62,16 @@ def load(path):
         spec.loader.exec_module(module)
 
 
+def reload(path):
+    """Forget every registered sprite and import the content folder afresh, picking up edits."""
+    REGISTRY.clear()
+    OVERRIDES.clear()
+    _LOADED.clear()
+    for name in [n for n in sys.modules if n.startswith("_doteshi_content_")]:
+        del sys.modules[name]
+    load(path)
+
+
 def build(id, variant=0):
     d = REGISTRY[id]
     rng = Rng(id, variant)

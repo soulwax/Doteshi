@@ -175,6 +175,11 @@ def cmd_verify(args):
     print(f"verified: two bakes are byte-identical ({len(runs[0])} files, sha256 {digest}); placements are sound")
 
 
+def cmd_serve(args):
+    from .web import server
+    server.serve(args.manifest, args.out, args.host, args.port, args.open)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="doteshi", description="doteshi: procedural sprites of any size and kind, baked into an atlas.")
     p.add_argument("--content", default="content", help="folder of sprite definitions (default: content)")
@@ -238,6 +243,14 @@ def main(argv=None):
     b.add_argument("--prune", action="store_true", help="free the slots of sprites no longer in the manifest")
     b.add_argument("--no-cache", action="store_true", help="render everything again")
     b.set_defaults(run=cmd_bake)
+
+    w = sub.add_parser("serve", help="open the web interface: browse sprites, try sizes and seeds, bake")
+    w.add_argument("manifest", nargs="?", default="content/manifest.toml")
+    w.add_argument("--out", default="out")
+    w.add_argument("--host", default="127.0.0.1")
+    w.add_argument("--port", type=int, default=8765)
+    w.add_argument("--open", action="store_true", help="open the page in the default browser")
+    w.set_defaults(run=cmd_serve)
 
     v = sub.add_parser("verify", help="bake twice and compare bytes; check placements")
     v.add_argument("manifest", nargs="?", default="content/manifest.toml")
