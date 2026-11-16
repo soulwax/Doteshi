@@ -220,6 +220,7 @@ class Scene:
     def rasterize(self, w, h, ss=1, nominal=None, view=None, body_only=False):
         gb = GBuffer(w, h, ss, nominal, view)
         gb.turn = self.turned
+        gb.seed = self.rng.seed & 0x7FFFFFFF
         for p in self.parts:
             if not (body_only and p.limb):
                 p.rasterize(gb)

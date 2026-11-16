@@ -1,0 +1,78 @@
+[atlas]
+name = "oddities"
+layout = "grid"
+cell = 16
+gutter = 1
+columns = 24
+namespace = "atlas::gen"
+content = "."
+
+[[sprite]]
+id = "oddity_geode"
+variants = 1
+pivot = "bottom"
+
+[[sprite]]
+id = "oddity_mushroom_ring"
+variants = 1
+pivot = "bottom"
+
+[[sprite]]
+id = "oddity_hoodoo"
+variants = 1
+pivot = "bottom"
+
+[[sprite]]
+id = "oddity_spruce"
+variants = 1
+pivot = "bottom"
+
+[[sprite]]
+id = "oddity_salt_lick"
+variants = 1
+pivot = "bottom"
+
+[[sprite]]
+id = "oddity_drowned_bell"
+variants = 1
+pivot = "bottom"
+
+[[sprite]]
+id = "oddity_lunar_dial"
+variants = 1
+pivot = "bottom"
+
+[[sprite]]
+id = "oddity_rubble_stash"
+variants = 1
+pivot = "bottom"
+
+[[sprite]]
+id = "oddity_kiln"
+variants = 1
+pivot = "bottom"
+
+[[sprite]]
+id = "oddity_amber_beetle"
+variants = 1
+pivot = "bottom"
+
+[[sprite]]
+id = "oddity_lightning_rod"
+variants = 1
+pivot = "bottom"
+
+[[sprite]]
+id = "oddity_glass_heron"
+variants = 1
+pivot = "bottom"
+
+[[sprite]]
+id = "oddity_echo_pit"
+variants = 1
+pivot = "bottom"
+
+[[sprite]]
+id = "oddity_starfall_well"
+variants = 1
+pivot = "bottom"

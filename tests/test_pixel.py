@@ -145,7 +145,7 @@ def test_a_marking_is_one_colour_or_the_other():
         s.part(sdf.box(0.9, 0.9), mat.matte(RED), profile=profile.flat(0.02), height=0.01).tint(
             WHITE, pat.custom(lambda c: (c.x > 0.031).astype(float)))
 
-    px = _resolve(build, 16, TINY.but(outline="none", fit=None))
+    px = _resolve(build, 16, TINY.but(outline="none", fit=None, flecks=0.0, waver=0.0))
     row = px[8][px[8, :, 3] > 0][:, :3]
     assert len(row) >= 12 and len({tuple(c) for c in row.tolist()}) == 2
 
@@ -206,11 +206,12 @@ def test_orphans_match_sprite_kit():
 
 def test_demo_sprites_meet_the_tiny_bar():
     """Kenney's 16px sprites, measured from the unmodified cells in Mellangan's atlas, average 5.8 colours and
-    0.4 orphans. The tiny profile is deliberately richer in colour (up to 12 tones and the outline) but must
-    stay as clean: at most 2 orphans per sprite."""
+    0.4 orphans. The tiny profile is deliberately richer: up to 18 tones and the outline, and a few stray
+    pixels left on purpose on rough material. Both stay bounded."""
     api.load("content")
     for id in ("mushroom", "beetle"):
         rows = [metrics.measure(api.render(id, 16, seed)) for seed in range(1, 9)]
         assert all(r["hard_alpha"] for r in rows)
-        assert max(r["colours"] for r in rows) <= 13 and max(r["orphans"] for r in rows) <= 2
+        # 18 tones, the outline, and up to two key-feature colours (eyes keep exactly their own).
+        assert max(r["colours"] for r in rows) <= 21 and max(r["orphans"] for r in rows) <= 8
         assert np.mean([r["fill"] for r in rows]) > 0.4

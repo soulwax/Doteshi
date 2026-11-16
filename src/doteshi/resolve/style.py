@@ -35,6 +35,8 @@ class Style:
     contour: int = 1                   # tones to darken where one form passes behind another of the same colour
     contour_gap: float = 0.2           # how far behind, in pixels, before that line is drawn
     contrast: float = 1.0              # exaggeration of light and shade within each colour
+    waver: float = 0.0                 # how unevenly the edges between tones run, in tone steps: a hand, not a ruler
+    flecks: float = 0.0                # share of rough, flat areas that get a stray pixel one tone off
     glint: float = 0.7                 # how much of a highlight smaller than a pixel survives as a bright pixel
     threshold: float = 0.5             # coverage at which a pixel is solid
     thin: float = 0.15                 # coverage at which a feature under a pixel wide still gets a pixel
@@ -48,8 +50,9 @@ class Style:
         return replace(self, **changes)
 
 
-TINY = Style("tiny", "pixel", snap=KENNEY, ink_lines=True, fit="body", bases=6, colors=12, min_dist=0.06,
-             levels=(-1.9, -0.8, 0.0, 1.1, 2.5), lift=0.03, contrast=1.35, grow_palette=True)
+TINY = Style("tiny", "pixel", snap=KENNEY, ink_lines=True, fit="body", bases=6, colors=18, min_dist=0.06,
+             levels=(-2.5, -1.7, -0.9, -0.3, 0.4, 1.1, 1.8, 2.6), lift=0.03, contrast=1.3, grow_palette=True,
+             waver=0.45, flecks=0.07)
 PIXEL_HD = Style("pixel-hd", "pixel", outline="tinted", fit="all", bases=9, colors=24, min_dist=0.05,
                  levels=(-3.0, -2.1, -1.3, -0.6, 0.0, 0.8, 1.6, 2.6))
 PAINTED = Style("painted")

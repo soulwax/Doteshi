@@ -6,24 +6,40 @@ Tasks are small and independent where possible. Each names the files it owns and
 
 ## Status (2026-11-16)
 
-The project is named **doteshi** (ドット絵師, a pixel artist). The package is `doteshi`; the command is `doteshi`, with `sprites` as an alias.
+The project is named **doteshi** (ドット絵師, a pixel artist). The package is `doteshi`; the command is `doteshi`, with `sprites` as an alias. **It is being built for Mellangan.**
 
-- **Focus set by the user: 16×16 up to 64×64, pixel-perfect.** Large painted output works but is no longer the priority.
-- **M0, M1, M2 built.** M1 and M2 still wait for the user's verdict at their review gates. Sheets: `docs/sizes.png`, `docs/tiny.png`, `docs/showcase.png`.
-- **M3 mostly done:** `doteshi bake` writes `out/atlas.png`, `out/atlas.json`, `out/atlas.gen.hpp`. Imports and companion maps are open.
+- **Principles set by the user** (see the next section) now drive the tool. Large painted output still works but is secondary.
+- **M0, M1, M2 built.** Sheets to judge: `docs/tiny.png`, `docs/structures.png`, `docs/showcase.png`.
+- **M3 mostly done:** `doteshi bake` writes `out/atlas.png`, `out/atlas.json`, `out/atlas.gen.hpp` in Mellangan's grid layout, with multi-cell blocks. Imports and companion maps are open.
 - **M4 partly done:** measurements and the `compare` sheet exist; the `lint` command does not.
 - **M5 started:** branching and spiral placement, shown by the demo tree and flower.
 - **M10 (web interface) built:** `doteshi serve --open`.
-- 69 tests pass (`uv run pytest`). `doteshi verify` confirms two bakes are byte-identical.
+- 78 tests pass (`uv run pytest`). `doteshi verify` confirms two bakes are byte-identical.
 - `README.md` documents everything that exists.
 
 Commands: `doteshi serve | bake | verify | list | render | sheet | ladder | debug | compare`.
 
+## Principles (from the user, 2026-11-16)
+
+1. **Living things face south.** Anything alive or animated is drawn facing south, glancing slightly to the south-south-east. Mellangan moves and mirrors sprites with shaders, so one drawing is enough. In doteshi: `@sprite(..., living=True)`, eyes right of centre for front views, `s.turn()` for top-down bodies; the flag is exported.
+2. **16x16, or whole cells.** Every sprite is 16x16. A big structure may be 32x32 or larger if it splits cleanly into 16x16 cells. In doteshi: the grid layout cuts larger sprites into a block of cells and refuses sizes that do not divide.
+3. **The examples are the first 11 rows of Mellangan's atlas** (Kenney Tiny Dungeon and Tiny Town). One pixel scale and one flat outline for everything; `tiny` is the default style up to 64px.
+4. **More detail at 16x16, finer transitions, intentional imperfections.** In doteshi: eight tone steps per colour, up to 18 colours per cell, wavering tone edges, and seeded stray pixels on rough materials. This makes generated sprites richer than the Kenney examples (about 17 colours against about 7); the user asked for it.
+
+- [x] **Facing convention.** `living` flag, `Scene.turn`, slime and beetle conform, exported to JSON and header. Tested in `tests/test_conventions.py`.
+- [x] **Cell rule.** Multi-cell blocks in the grid layout, `piece()` in the header, size validation, demo manifest in Mellangan's layout (16px in 18px cells, 24 columns).
+- [x] **One pixel scale.** `tiny` up to 64px with a palette that grows with the number of cells.
+- [x] **Drawn look.** `waver` and `flecks` in the `tiny` profile.
+- [ ] **A facing check in lint.** Nothing verifies that a `living` sprite really faces south. Done when lint flags a living sprite whose key features sit left of centre or in the upper half.
+- [ ] **A humanoid.** The reference rows are mostly people; doteshi has none. Done when a villager-like sprite passes for a neighbour of the Kenney characters on the `compare` sheet, or the decision is made to keep people hand-drawn.
+- [ ] **Ground tiles and edge sets** in the manner of the reference rows (grass, dirt, path edges, walls). Done when a tiled preview shows no seams.
+- [ ] **Agree the level of richness.** The user should confirm the 16x16 look on `docs/tiny.png` beside real Mellangan tiles, since it is busier than Kenney's.
+
 ## Goal and bar
 
-- **Any size.** One sprite definition renders at 16px, 64px, 256px or larger, and each size is resolved for that size, not scaled from another. The sizes that matter most are 16, 32, 48 and 64.
+- **Size.** Sprites are 16x16, or whole numbers of 16-pixel cells for big structures (see Principles). The same definitions can also be painted at any size for previews.
 - **Any kind.** Creatures, plants, fungi, minerals, items, buildings, ground tiles, effects, emblems. A new kind is a new library module, never an engine change.
-- **Beautiful.** Form, material and light are computed. At large sizes the target is the bas-relief fidelity of Mellangan's `res/achievements.png`, straight from the renderer with no image model. At 16px the target is to sit beside Kenney Tiny Town and Tiny Dungeon tiles without standing out.
+- **Beautiful.** Form, material and light are computed. At large sizes the target is the bas-relief fidelity of Mellangan's `res/achievements.png`, straight from the renderer with no image model. At 16px the target is to belong beside the first 11 rows of Mellangan's atlas, with more detail than those tiles have.
 - **Organic.** Structure comes from growth processes and soft joins, not assembled primitives.
 - **Much better than the inspiration.** The reference is `C:\Users\soulwax\Workspace\c++\mellangan\tools` (about 21k lines of `make_*.py`). See "Carried over" and "Replaced" below.
 
@@ -178,6 +194,8 @@ One module per kind under `library/`, each a parameterised builder with ranges, 
 - [ ] **Atlas support.** Frames grouped under one sprite id with frame order and timing in `atlas.json` and the header. Done when a consumer can look up `walk` frames by name.
 
 ## M8. Mellangan adapter
+
+This is what the tool is for; it is the next large piece.
 
 - [ ] **Import the current atlas.** Read `res/atlas.png` through its declared bands and pin every cell at its current rectangle. Done when the baked output is pixel-identical to the input.
 - [ ] **Emit the header.** Generate accessors equivalent to those in `src/Atlas.hpp`. Done when Mellangan builds against the generated header with no call-site changes.

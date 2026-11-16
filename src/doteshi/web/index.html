@@ -220,9 +220,9 @@
 
 <script>
 const $ = id => document.getElementById(id);
-const SIZES = [16, 32, 48, 64, 128, 256];
+const SIZES = [16, 32, 48, 64, 128, 256];      // multiples of the 16-pixel cell, then two painted sizes
 const STYLE_NAMES = { "": "Auto", "tiny": "Tiny", "pixel-hd": "Pixel HD", "painted": "Painted", "relief": "Relief" };
-const state = { sprites: [], id: null, size: 32, seed: 1, style: "", ground: "checker", atlas: null, page: 0 };
+const state = { sprites: [], id: null, size: 16, seed: 1, style: "", ground: "checker", atlas: null, page: 0 };
 
 const url = (id, size, seed, style) =>
   `/api/render?id=${encodeURIComponent(id)}&size=${size}&seed=${seed}&style=${encodeURIComponent(style || "")}&v=${state.version || ""}`;

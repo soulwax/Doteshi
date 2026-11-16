@@ -14,6 +14,7 @@ import numpy as np
 from PIL import Image
 
 from ..core.color import (lab_of, linear_to_oklab, linear_to_srgb, oklab_to_linear, srgb_to_linear, tone)
+from ..core import noise
 from ..core.mathx import shift, spread
 from ..shade.light import shade
 
@@ -179,6 +180,9 @@ def resolve(gb, style, env=None):
     rgbb = _blocks(rgb, h, w, ss)
     lit = (rgbb * wt[..., None]).sum(axis=2) / ws
     height = (_blocks(gb.H, h, w, ss) * wt).sum(axis=-1) / ws[..., 0]
+    rough = (_blocks(gb.rough, h, w, ss) * wt).sum(axis=-1) / ws[..., 0]
+    rows_i, cols_i = np.mgrid[0:h, 0:w]
+    chance = lambda salt: noise.hash2(cols_i, rows_i, gb.seed + salt).astype(np.float64) / 4294967296.0
     # A highlight smaller than a pixel would average away; remember how far the brightest samples stand out.
     lum = rgbb @ np.array([0.2126, 0.7152, 0.0722])
     peak = np.where(wt > 0, lum, 0.0)
@@ -188,11 +192,13 @@ def resolve(gb, style, env=None):
 
     # Key features land on the pixel under their centre, whatever their size.
     keep = np.zeros((h, w), bool)
+    exact = {}
     for pid, cx, cy, lab in gb.keeps:
         col, row = int((cx - gb.x0) // gb.px), int((cy - gb.y0) // gb.px)
         if 0 <= row < h and 0 <= col < w:
             own = gb.pid == pid
             solid[row, col] = keep[row, col] = True
+            exact[(row, col)] = _to_rgb8(lab)
             owner[row, col] = pid
             base[row, col] = lab
             lit[row, col] = rgb[own].mean(axis=0) if own.any() else np.maximum(oklab_to_linear(lab), 0.0)
@@ -235,6 +241,10 @@ def resolve(gb, style, env=None):
         light = light + style.dither * 0.1 * (BAYER[ys % 4, xs % 4] - 0.5)
     mid = centres[labels, 0]
     light = mid + (light - mid) * style.contrast
+    if style.waver:
+        # Nudge each pixel's light a little, so the edge between two tones wanders as a drawn one does.
+        step = float(np.mean(np.abs(np.diff(ramp_lab[:, 0].reshape(len(centres), T), axis=1))))
+        light = light + style.waver * step * (chance(11)[solid] - 0.5)
     pick = np.argmin(np.abs(ramp_lab[:, 0].reshape(len(centres), T)[labels] - light[:, None]), axis=1)
     pick[(lines | keep)[solid]] = int(np.argmin(np.abs(levels)))   # lines and key features: base colour, unlit
     family = np.full((h, w), -1, np.int64)
@@ -258,12 +268,27 @@ def resolve(gb, style, env=None):
     _reduce(index, ramp_lab, int(round(style.colors * more)), keep)
     _absorb_strays(index, ramp_lab, keep)
 
+    if style.flecks:
+        # Deliberate imperfection: on rough material, a few pixels in flat areas sit one tone off, as wear,
+        # grain or a slip of the hand would leave them. Smooth, glossy surfaces stay clean.
+        same = solid & ~keep & ~lines
+        for dy, dx in N4:
+            same &= shift(index, dx, dy, -1) == index
+        odds = style.flecks * np.clip((rough - 0.35) / 0.5, 0.0, 1.0)
+        fleck = same & (chance(23) < odds)
+        fleck &= ~(shift(fleck, 1, 0, False) | shift(fleck, 0, 1, False))        # never two side by side
+        tone_at = index % T + np.where(chance(37) < 0.7, -1, 1)
+        index[fleck] = (index[fleck] // T) * T + np.clip(tone_at[fleck], 0, T - 1)
+
     # 5. Compose, with the outline in the margin.
     m = style.inset
     out = np.zeros((h + 2 * m, w + 2 * m, 4), np.uint8)
     inner = out[m:h + m, m:w + m]
     inner[solid, :3] = ramp[index[solid]]
     inner[solid, 3] = 255
+    for (row, col), colour in exact.items():        # key features keep exactly their own colour
+        if solid[row, col]:
+            inner[row, col, :3] = colour
     if style.outline != "none":
         hard = np.pad(solid & ~lines & ~np.isin(owner, list(gb.soft)), m)
         fam = np.pad(family, m, constant_values=-1)

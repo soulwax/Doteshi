@@ -14,6 +14,7 @@ class GBuffer:
         self.keeps = []                      # key features: (part id, x, y, base colour as OKLab)
         self.soft = set()                    # ids of parts that take no outline
         self.turn = None                     # the scene's rotation: (cos, sin, cx, cy)
+        self.seed = 0                        # the sprite's seed, for the resolver's deliberate irregularities
         self.W, self.Hn = self.w * self.ss, self.h * self.ss
         # The view is the part of sprite space the canvas shows: (left, top, height). By default the canvas
         # spans -1..1 top to bottom and is centred on x = 0.
