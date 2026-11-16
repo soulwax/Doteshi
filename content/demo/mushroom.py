@@ -72,7 +72,7 @@ def toadstool(s, rng, x, ground, scale, kind, z0=0.0):
     cap.tint("#3a1c1c", pat.mottle(0.3 * scale, seed + 4), 0.22)
     cap.tint(spot_c, lip, 0.35)
     if rng.chance(0.75):
-        warts = pat.spots(scale * rng.uniform(0.13, 0.24), rng.uniform(0.45, 0.85), seed + 5, vary=0.7, soft=0.3)
+        warts = pat.spots(scale * rng.uniform(0.13, 0.24), rng.uniform(0.45, 0.85), seed + 5, vary=0.7, soft=0.3).keep()
         cap.tint(spot_c, warts, 0.95, rough=0.95, spec=0.03)
         cap.bump(warts, 0.016 * scale)
     else:

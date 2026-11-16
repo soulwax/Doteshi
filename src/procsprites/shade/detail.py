@@ -3,7 +3,8 @@
 
 Patterns are laid out in the part's metric surface coordinates, so they follow tubes and domes and foreshorten
 toward the edges. Each carries a `size`: the smallest feature it draws, in sprite units. Parts drop patterns
-whose features would be smaller than about a pixel and a half at the size being rendered.
+whose features would be smaller than about a pixel and a half at the size being rendered, unless the pattern is
+marked with .keep(), in which case it is coarsened to stay readable.
 """
 import numpy as np
 
@@ -14,17 +15,26 @@ _TAU = 2.0 * np.pi
 
 
 class Pattern:
-    def __init__(self, fn, size=None):
-        self.fn, self.size = fn, size
+    def __init__(self, fn, size=None, kept=False):
+        self.fn, self.size, self.kept = fn, size, kept
 
     def __call__(self, c):
         return self.fn(c)
 
+    def keep(self):
+        """Mark as essential: at sizes where it would be too fine to draw, it is coarsened (fewer, larger
+        features) instead of dropped. For markings a sprite is recognised by, such as a toadstool's spots."""
+        return Pattern(self.fn, self.size, True)
+
     def _join(self, other, op):
         if isinstance(other, Pattern):
             sizes = [s for s in (self.size, other.size) if s is not None]
-            return Pattern(lambda c: op(self.fn(c), other.fn(c)), min(sizes) if sizes else None)
-        return Pattern(lambda c: op(self.fn(c), other), self.size)
+            return Pattern(lambda c: op(self.fn(c), other.fn(c)), min(sizes) if sizes else None,
+                           self.kept or other.kept)
+        return Pattern(lambda c: op(self.fn(c), other), self.size, self.kept)
+
+    def _map(self, fn):
+        return Pattern(lambda c: fn(self.fn(c)), self.size, self.kept)
 
     def __mul__(self, other):
         return self._join(other, lambda a, b: a * b)
@@ -35,17 +45,17 @@ class Pattern:
         return self._join(other, lambda a, b: a + b)
 
     def __rsub__(self, other):
-        return Pattern(lambda c: other - self.fn(c), self.size)
+        return self._map(lambda v: other - v)
 
     def __neg__(self):
-        return Pattern(lambda c: -self.fn(c), self.size)
+        return self._map(lambda v: -v)
 
     def clip(self, lo=0.0, hi=1.0):
-        return Pattern(lambda c: np.clip(self.fn(c), lo, hi), self.size)
+        return self._map(lambda v: np.clip(v, lo, hi))
 
     def step(self, lo, hi):
         """Remap through a smooth threshold: 0 below lo, 1 above hi."""
-        return Pattern(lambda c: smoothstep(lo, hi, self.fn(c)), self.size)
+        return self._map(lambda v: smoothstep(lo, hi, v))
 
 
 def custom(fn, size=None):

@@ -19,6 +19,7 @@ A manifest is a TOML file:
     variants = 8              # seeds 0..7, or seeds = [3, 5, 11]
     pivot = "bottom"          # "bottom", "center" or [x, y] as fractions of the sprite
     tile = false              # true: repeat edge pixels into the padding instead of leaving it clear
+    style = "pixel-hd"        # tiny, pixel-hd, painted or relief; by default it follows the size
 
 The lock file sits beside the manifest as <name>.lock.json. Sprites already in it keep their place; new ones take
 free space. Sprites dropped from the manifest keep their slot reserved until a bake with prune or repack.
@@ -47,6 +48,7 @@ class Instance:
     variant: int
     pivot: tuple
     tile: bool
+    style: str = None
 
 
 @dataclass
@@ -88,7 +90,7 @@ def read_manifest(path):
                 if name in seen:
                     raise ValueError(f"{path}: {name} is listed twice")
                 seen.add(name)
-                instances.append(Instance(name, id, int(size), int(seed), pivot, bool(entry.get("tile", False))))
+                instances.append(Instance(name, id, int(size), int(seed), pivot, bool(entry.get("tile", False)), entry.get("style")))
     return settings, instances
 
 
@@ -111,7 +113,7 @@ def render_all(instances, content, cache_dir=None, report=None):
         if file is not None and file.exists():
             out[inst.name] = np.asarray(Image.open(file).convert("RGBA"))
             continue
-        image = api.render(inst.id, inst.size, inst.variant)
+        image = api.render(inst.id, inst.size, inst.variant, inst.style)
         if file is not None:
             file.parent.mkdir(parents=True, exist_ok=True)
             image.save(file)

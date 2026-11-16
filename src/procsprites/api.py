@@ -1,15 +1,18 @@
 """Authoring and rendering entry points: the @sprite decorator, the registry, and render()."""
 import importlib.util
-import math
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from PIL import Image
+
 from .core.rng import Rng
 from .form.scene import Scene
-from .resolve import painted
+from .resolve import painted, pixel
+from .resolve import style as styles
 
 REGISTRY = {}
+OVERRIDES = {}
 _LOADED = set()
 
 
@@ -20,14 +23,27 @@ class SpriteDef:
     sizes: tuple
     variants: int
     aspect: float
+    style: object
 
 
-def sprite(id, sizes=(256,), variants=1, aspect=1.0):
+def sprite(id, sizes=(256,), variants=1, aspect=1.0, style=None):
     """Register a sprite. The function receives a Scene and a seeded Rng and adds parts to the scene.
-    `aspect` is width over height; sizes are heights in pixels."""
+    `aspect` is width over height; sizes are heights in pixels. `style` fixes a style profile (a name or a
+    Style); without it the profile follows the size."""
 
     def register(fn):
-        REGISTRY[id] = SpriteDef(id, fn, tuple(sizes), variants, aspect)
+        REGISTRY[id] = SpriteDef(id, fn, tuple(sizes), variants, aspect, style)
+        return fn
+
+    return register
+
+
+def override(id, size):
+    """Register a hand-made version of a sprite for one size. The function receives a seeded Rng and returns
+    an RGBA image, or (rows, palette) or (rows, palette, outline colour) for `pixel.pixelmap`."""
+
+    def register(fn):
+        OVERRIDES[(id, int(size))] = fn
         return fn
 
     return register
@@ -60,11 +76,27 @@ def supersample(size):
     return next((s for s in (2, 3, 4, 6, 8) if s >= want), 8)
 
 
-def rasterize(id, size=256, variant=0, ss=None):
+def rasterize(id, size=256, variant=0, ss=None, inset=0, fit=False):
+    """The surface buffer of one sprite. `inset` leaves that many pixels clear on every side; `fit` frames the
+    sprite's solid mass to fill what remains."""
     scene = build(id, variant)
-    return scene.rasterize(int(round(size * scene.aspect)), size, ss or supersample(size))
+    w, h = int(round(size * scene.aspect)) - 2 * inset, size - 2 * inset
+    view = scene.fit(w, h, size) if fit else None
+    return scene.rasterize(w, h, ss or supersample(size), nominal=size, view=view)
 
 
-def render(id, size=256, variant=0, ss=None, **style):
-    """One sprite as an RGBA image `size` pixels high."""
-    return painted.resolve(rasterize(id, size, variant, ss), **style)
+def render(id, size=256, variant=0, style=None, ss=None):
+    """One sprite as an RGBA image `size` pixels high. `style` is a profile name or a Style; by default the
+    sprite's own, else the one that suits the size."""
+    d = REGISTRY[id]
+    w = int(round(size * d.aspect))
+    if (id, size) in OVERRIDES and style is None:
+        made = OVERRIDES[(id, size)](Rng(id, variant))
+        image = made if isinstance(made, Image.Image) else pixel.pixelmap(*made)
+        if image.size != (w, size):
+            raise ValueError(f"the {size}px override of '{id}' is {image.width}x{image.height}, expected {w}x{size}")
+        return image.convert("RGBA")
+    st = styles.get(style if style is not None else d.style, size)
+    if st.resolver == "pixel":
+        return pixel.resolve(rasterize(id, size, variant, ss or st.ss, st.inset, st.fit), st)
+    return painted.resolve(rasterize(id, size, variant, ss), outline=st.line, outline_width=st.line_width)

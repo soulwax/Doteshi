@@ -36,6 +36,18 @@ def shift(a, ox, oy, fill=0.0):
     return out
 
 
+def spread(mask, r, grow):
+    """Grow or shrink a boolean mask by r samples (square neighbourhood)."""
+    for axis in (0, 1):
+        acc = mask.copy()
+        for k in range(1, r + 1):
+            for s in (-k, k):
+                moved = shift(mask, s if axis else 0, 0 if axis else s, False)
+                acc = (acc | moved) if grow else (acc & moved)
+        mask = acc
+    return mask
+
+
 def box_blur(a, r):
     """Box blur of half-width r samples along both axes, edges clamped."""
     r = int(r)

@@ -32,3 +32,23 @@ id = "beetle"
 size = 256
 seeds = [3, 13]
 pivot = "center"
+
+# Small sizes go through the pixel resolver: pixel-hd at 32px, tiny at 16px.
+[[sprite]]
+id = "mushroom"
+sizes = [32, 16]
+variants = 8
+pivot = "bottom"
+
+[[sprite]]
+id = "beetle"
+sizes = [32, 16]
+variants = 8
+pivot = "center"
+
+# The 16px gem is a hand-drawn cell (see demo/gem.py); the 64px one is generated.
+[[sprite]]
+id = "gem"
+sizes = [64, 16]
+variants = 6
+pivot = "center"

@@ -52,14 +52,14 @@ def cmd_list(args):
 def cmd_render(args):
     for id in _ids(args.sprite):
         for seed in _seeds(args.seeds):
-            _save(api.render(id, args.size, seed), Path(args.out) / f"{id}_{args.size}_{seed}.png")
+            _save(api.render(id, args.size, seed, args.style), Path(args.out) / f"{id}_{args.size}_{seed}.png")
 
 
 def cmd_sheet(args):
     for id in _ids(args.sprite):
         seeds = _seeds(args.seeds)
         start = time.perf_counter()
-        images = [api.render(id, args.size, s) for s in seeds]
+        images = [api.render(id, args.size, s, args.style) for s in seeds]
         took = (time.perf_counter() - start) / len(images)
         out = sheets.sheet(images, [f"seed {s}" for s in seeds], args.cols, args.scale,
                            title=f"{id}  {args.size}px  ({took:.2f}s each)")
@@ -72,7 +72,7 @@ def cmd_ladder(args):
         top = max(sizes)
         images = []
         for s in sizes:
-            im = api.render(id, s, args.seed)
+            im = api.render(id, s, args.seed, args.style)
             k = max(1, top // s) if s < 96 else 1
             images.append(im.resize((im.width * k, im.height * k), 0) if k > 1 else im)
         _save(sheets.sheet(images, [f"{s}px" for s in sizes], len(sizes), title=f"{id}  seed {args.seed}"),
@@ -82,6 +82,7 @@ def cmd_ladder(args):
 def cmd_debug(args):
     for id in _ids(args.sprite):
         gb = api.rasterize(id, args.size, args.seed, ss=2)
+        from .resolve import painted
         rgb, alpha, layers = shade(gb)
         a3 = gb.A[..., None]
         height = np.where(gb.A > 0.01, gb.H, np.nan)
@@ -98,6 +99,38 @@ def cmd_debug(args):
         ]
         _save(sheets.sheet([v for _, v in views], [n for n, _ in views], 4, title=f"{id}  seed {args.seed}"),
               Path(args.out) / f"{id}_debug.png")
+
+
+def _cells(args):
+    """Reference sprites cut from a grid atlas: `cell` pixels square on a `pitch` pixel grid."""
+    from PIL import Image
+    ref = Image.open(args.reference).convert("RGBA")
+    out = []
+    for i in _seeds(args.cells):
+        x, y = i % args.columns * args.pitch + args.origin, i // args.columns * args.pitch + args.origin
+        out.append(ref.crop((x, y, x + args.cell, y + args.cell)))
+    return out
+
+
+def cmd_compare(args):
+    """Generated sprites in among reference ones, at the reference's size, with both sets' measurements."""
+    from .lint import metrics
+    refs = _cells(args)
+    made = [api.render(id, args.cell, s, args.style) for id in _ids(args.sprite) for s in _seeds(args.seeds)]
+    mixed, labels = [], []
+    for i in range(max(len(refs), len(made))):
+        for group, tag in ((refs, "ref"), (made, "new")):
+            if i < len(group):
+                mixed.append(group[i])
+                labels.append(tag)
+    line = lambda name, m: (f"{name}: {m['colours']:.1f} colours, {m['orphans']:.1f} orphans, "
+                            f"{m['fill']:.0%} filled, {m['outlined']:.0%} outlined")
+    a, b = metrics.summary(refs), metrics.summary(made)
+    print(line("reference", a))
+    print(line("generated", b))
+    out = sheets.sheet(mixed, labels, args.cols, args.scale, ground=tuple(args.ground),
+                       title=line("ref", a) + "   |   " + line("new", b))
+    _save(out, Path(args.out) / "compare.png")
 
 
 def cmd_bake(args):
@@ -153,6 +186,7 @@ def main(argv=None):
     r.add_argument("sprite", nargs="+")
     r.add_argument("--size", type=int, default=256)
     r.add_argument("--seeds", default="0")
+    r.add_argument("--style", default=None)
     r.add_argument("--out", default="out/render")
     r.set_defaults(run=cmd_render)
 
@@ -162,6 +196,7 @@ def main(argv=None):
     s.add_argument("--seeds", default="1..16")
     s.add_argument("--cols", type=int, default=None)
     s.add_argument("--scale", type=int, default=1)
+    s.add_argument("--style", default=None, help="tiny, pixel-hd, painted or relief (default: by size)")
     s.add_argument("--out", default="out/sheets")
     s.set_defaults(run=cmd_sheet)
 
@@ -169,6 +204,7 @@ def main(argv=None):
     l.add_argument("sprite", nargs="+")
     l.add_argument("--sizes", default="16,24,32,48,64,128,256")
     l.add_argument("--seed", type=int, default=1)
+    l.add_argument("--style", default=None)
     l.add_argument("--out", default="out/sheets")
     l.set_defaults(run=cmd_ladder)
 
@@ -178,6 +214,22 @@ def main(argv=None):
     d.add_argument("--seed", type=int, default=1)
     d.add_argument("--out", default="out/sheets")
     d.set_defaults(run=cmd_debug)
+
+    c = sub.add_parser("compare", help="generated sprites among reference sprites cut from a grid atlas")
+    c.add_argument("sprite", nargs="+")
+    c.add_argument("--reference", required=True, help="a grid atlas image to cut reference sprites from")
+    c.add_argument("--cells", default="0..23", help="which cells of the reference, e.g. 84..95,108..119")
+    c.add_argument("--cell", type=int, default=16)
+    c.add_argument("--pitch", type=int, default=18)
+    c.add_argument("--origin", type=int, default=1)
+    c.add_argument("--columns", type=int, default=24)
+    c.add_argument("--seeds", default="1..8")
+    c.add_argument("--style", default=None)
+    c.add_argument("--cols", type=int, default=12)
+    c.add_argument("--scale", type=int, default=6)
+    c.add_argument("--ground", type=int, nargs=3, default=[104, 158, 84], help="background colour")
+    c.add_argument("--out", default="out/sheets")
+    c.set_defaults(run=cmd_compare)
 
     b = sub.add_parser("bake", help="bake a manifest into atlas.png, atlas.json and a C++ header")
     b.add_argument("manifest", nargs="?", default="content/manifest.toml")

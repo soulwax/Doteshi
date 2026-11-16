@@ -70,11 +70,11 @@ def beetle(s, rng):
     cases.tint("#0c0a0a", seam, 0.7)
     style = rng.int(0, 3)
     if style == 0:
-        cases.tint(mark_c, pat.spots(W * rng.uniform(0.45, 0.7), rng.uniform(0.6, 0.95), seed + 6, vary=0.4), 0.92, irid=0.0)
+        cases.tint(mark_c, pat.spots(W * rng.uniform(0.45, 0.7), rng.uniform(0.6, 0.95), seed + 6, vary=0.4).keep(), 0.92, irid=0.0)
     elif style == 1:
-        cases.tint(mark_c, pat.stripes(W * rng.uniform(0.3, 0.5), 0.45, axis="u", wobble=0.25, seed=seed + 6), 0.9, irid=0.0)
+        cases.tint(mark_c, pat.stripes(W * rng.uniform(0.3, 0.5), 0.45, axis="u", wobble=0.25, seed=seed + 6).keep(), 0.9, irid=0.0)
     elif style == 2:
-        cases.tint(mark_c, pat.stripes(rng.uniform(0.2, 0.34), 0.4, axis="v", wobble=0.5, seed=seed + 6), 0.9, irid=0.0)
+        cases.tint(mark_c, pat.stripes(rng.uniform(0.2, 0.34), 0.4, axis="v", wobble=0.5, seed=seed + 6).keep(), 0.9, irid=0.0)
     cases.tint(mark_c, pat.edge(0.045), 0.5)
     # The small plate where the wing cases meet the shield.
     s.part(sdf.polygon([(-0.05, y_waist + 0.01), (0.05, y_waist + 0.01), (0.0, y_waist + 0.11)]), shell,
