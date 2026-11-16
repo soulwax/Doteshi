@@ -26,7 +26,7 @@ Commands: `sprites list | render | sheet | ladder | debug | bake | verify`.
 
 - **Stack:** Python, numpy and Pillow only, run through `uv` with a committed `uv.lock`. No scipy. Sprites are authored as Python code.
 - **Standalone tool.** Mellangan is the first consumer through an adapter (M8), not the host repo.
-- **Package name** `procsprites`, command `sprites`.
+- **Package name** `doteshi`, command `sprites`.
 - **Sprite space:** origin at canvas centre, x right, y down, the canvas height spans -1 to 1, width scales by aspect ratio. Ground line at y = +1.
 - **Light:** key light from the top left, matching `LIGHT = (-0.6, -0.8)` in Mellangan's `sprite_kit.py`.
 - **Randomness:** an own hash-based generator seeded from `(sprite id, variant, stream name)`. numpy's random module is never used, so results do not depend on numpy's distribution code.
@@ -55,7 +55,7 @@ Commands: `sprites list | render | sheet | ladder | debug | bake | verify`.
 
 ```
 pyproject.toml, uv.lock
-src/procsprites/
+src/doteshi/
   core/      rng.py  noise.py  sdf.py  curves.py  color.py  gbuffer.py
   form/      profile.py  part.py  scene.py  rig.py
   grow/      branch.py  phyllotaxis.py  cells.py  rd.py  strokes.py
@@ -74,7 +74,7 @@ out/         atlas.png  atlas.json  Atlas.gen.hpp  sheets/   (not committed)
 
 ## M0. Skeleton
 
-- [x] **Create the project.** `pyproject.toml` with numpy and Pillow pinned, `uv.lock`, `src/procsprites/` package, `sprites` entry point, `.gitignore` covering `out/` and caches, `git init`. Done when `uv run sprites --help` prints the command list.
+- [x] **Create the project.** `pyproject.toml` with numpy and Pillow pinned, `uv.lock`, `src/doteshi/` package, `sprites` entry point, `.gitignore` covering `out/` and caches, `git init`. Done when `uv run sprites --help` prints the command list.
 - [x] **Test harness.** `tests/` with pytest and a `uv run pytest` path. Done when one placeholder test passes.
 - [x] **Hash generator.** `core/rng.py`: splitmix64-style generator with named sub-streams, `float`, `int`, `choice`, `gauss`, `on_disc`. Done when a golden-value test pins the first 16 outputs of three seeds. *The test pins the first 4 outputs of three seeds, not 16.*
 - [x] **Sheet writer, minimal.** `lint/sheets.py`: tile images onto a labelled background at an integer scale. Needed by every later review. Done when `sprites sheet` writes a PNG grid from a list of images.

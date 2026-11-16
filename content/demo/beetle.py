@@ -1,7 +1,7 @@
 """A beetle seen from above: ridged wing cases, a shield behind the head, jointed legs, feelers and jaws."""
 import numpy as np
 
-from procsprites import mat, pat, profile, sdf, sprite
+from doteshi import mat, pat, profile, sdf, sprite
 
 #            shell      marking    limbs      sheen
 KINDS = [("#b5651d", "#3a1f10", "#2a1a14", 0.15),    # amber
@@ -31,18 +31,18 @@ def beetle(s, rng):
         k = (W + j(knee[0]), hip_y + j(knee[1]))
         f = (W + j(foot[0]), hip_y + j(foot[1]))
         t = (W + j(toe[0]), hip_y + j(toe[1]))
-        s.pair(sdf.stroke([hip, k], [0.05, 0.062, 0.04], spline=False), limb, z=0.0)
-        shin = s.pair(sdf.stroke([k, f, t], [0.034, 0.02, 0.007], spline=False), limb, z=0.004)
+        s.pair(sdf.stroke([hip, k], [0.05, 0.062, 0.04], spline=False), limb, z=0.0, limb=True)
+        shin = s.pair(sdf.stroke([k, f, t], [0.034, 0.02, 0.007], spline=False), limb, z=0.004, limb=True)
         shin.bump(pat.rings(0.03) * pat.gradient("u", 0.5, 0.7), 0.004)
 
     # Feelers and jaws.
     reach = rng.uniform(0.28, 0.42)
     feel = s.pair(sdf.stroke([(0.07, y_head - 0.04), (0.2, y_head - reach * 0.75), (0.36, y_head - reach)],
-                             [0.016, 0.012, rng.choice([0.01, 0.022])]), limb, z=0.01)
+                             [0.016, 0.012, rng.choice([0.01, 0.022])]), limb, z=0.01, limb=True)
     feel.bump(pat.rings(0.04), 0.006)
     jaw = rng.uniform(0.1, 0.2)
     s.pair(sdf.stroke([(0.07, y_head - 0.06), (0.12, y_head - 0.06 - jaw * 0.6), (0.035, y_head - 0.06 - jaw)],
-                      [0.03, 0.022, 0.004]), limb, z=0.03)
+                      [0.03, 0.022, 0.004]), limb, z=0.03, limb=True)
 
     # Head and eyes.
     head = s.part(sdf.lathe((0.0, y_head - 0.12), (0.0, y_neck + 0.06), [0.07, 0.15, 0.18, 0.17]),

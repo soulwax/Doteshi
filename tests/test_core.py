@@ -8,8 +8,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from procsprites.core import color, curves, noise, sdf
-from procsprites.core.rng import Rng
+from doteshi.core import color, curves, noise, sdf
+from doteshi.core.rng import Rng
 
 KIT = Path("C:/Users/soulwax/Workspace/c++/mellangan/tools/sprite_kit.py")
 

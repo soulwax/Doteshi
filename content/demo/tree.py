@@ -2,8 +2,8 @@
 foliage at every twig end."""
 import numpy as np
 
-from procsprites import mat, pat, sdf, sprite
-from procsprites.grow import branch
+from doteshi import mat, pat, sdf, sprite
+from doteshi.grow import branch
 
 #           bark       leaf       leaf light  leaf shade
 KINDS = [("#6b4a35", "#4c8a3a", "#9cc24e", "#27543a"),    # summer oak

@@ -3,9 +3,9 @@ import math
 
 import numpy as np
 
-from procsprites import mat, pat, profile, sdf, sprite
-from procsprites.core import curves
-from procsprites.core.mathx import smoothstep
+from doteshi import mat, pat, profile, sdf, sprite
+from doteshi.core import curves
+from doteshi.core.mathx import smoothstep
 
 #            cap        spots      stem       gills
 KINDS = [("#c23b2a", "#f6ecd9", "#eadfc8", "#dcc097"),   # fly agaric
@@ -102,7 +102,7 @@ def mushroom(s, rng):
             w = blades.uniform(0.016, 0.026)
             blade = s.part(sdf.stroke([(bx, ground + 0.04), (bx + sway * 0.35, ground - tall * 0.55),
                                        (bx + sway, ground - tall)], [w, w * 0.75, 0.0]),
-                           mat.satin(blades.choice(GRASS), trans=0.55), z=z)
+                           mat.satin(blades.choice(GRASS), trans=0.55), z=z, limb=True)
             blade.tint("#2f5a2c", pat.gradient("u", 0.5, 0.0), 0.55)
 
     grass(blades.int(3, 6), -0.03)

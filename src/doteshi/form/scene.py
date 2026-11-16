@@ -4,7 +4,7 @@ import numpy as np
 
 from ..core.color import lab_of, linear_of
 from ..core.gbuffer import PROPS, GBuffer
-from ..core.mathx import smax, smoothstep, spread
+from ..core.mathx import smax, smoothstep
 from . import profile as profiles
 
 MAX_SLOPE = 7.0       # about 82 degrees: the steepest a surface may tilt away from the viewer
@@ -20,11 +20,11 @@ class Ctx:
 
 class Part:
     def __init__(self, shape, material, profile=profiles.dome, z=0.0, relief=1.0, height=None, join=0.0,
-                 onlay=False, on=None, keep=False, min_size=None, soft=False, name=None):
+                 onlay=False, on=None, keep=False, min_size=None, soft=False, limb=False, name=None):
         self.shape, self.material, self.profile = shape, material, profile
         self.z, self.relief, self.height, self.join = z, relief, height, join
         self.onlay, self.on, self.keep, self.name = onlay or on is not None, on, keep, name
-        self.min_size, self.soft = min_size, soft
+        self.min_size, self.soft, self.limb = min_size, soft, limb
         self.bumps, self.tints = [], []
         self.pid = 0
 
@@ -186,15 +186,12 @@ class Scene:
                                                                     r.uniform(-0.008, 0.008) * asym)
         return Group([self.part(shape, material, **kw), self.part(twin, material, **kw)])
 
-    def fit(self, w, h, nominal=None, probe=96):
-        """The view that makes the scene's solid mass fill a w x h canvas. Slender features (legs, feelers,
-        blades) are not counted, so a creature's body fills the frame and its extremities may run off it,
-        which is how a sprite this small is drawn by hand."""
-        gb = self.rasterize(max(8, int(round(probe * w / h))), probe, 1, nominal)
-        mask = gb.A > 0.5
-        r = max(1, int(round(0.5 * probe / h)))
-        mass = spread(spread(mask, r, False), r, True)
-        ys, xs = np.nonzero(mass if mass.any() else mask)
+    def fit(self, w, h, nominal=None, body_only=True, probe=96):
+        """The view that makes the scene fill a w x h canvas. With `body_only`, parts marked `limb` (legs,
+        feelers, loose blades of grass) are not counted, so a creature's body fills the frame and its
+        extremities may run off it, which is how a sprite of 16 pixels is drawn by hand."""
+        gb = self.rasterize(max(8, int(round(probe * w / h))), probe, 1, nominal, body_only=body_only)
+        ys, xs = np.nonzero(gb.A > 0.5)
         if len(xs) == 0:
             return None
         x0, x1 = gb.xs[xs.min()] - gb.spx / 2, gb.xs[xs.max()] + gb.spx / 2
@@ -202,8 +199,9 @@ class Scene:
         span = max(y1 - y0, (x1 - x0) * h / w)
         return (x0 + x1) / 2 - span * w / h / 2, (y0 + y1) / 2 - span / 2, span
 
-    def rasterize(self, w, h, ss=1, nominal=None, view=None):
+    def rasterize(self, w, h, ss=1, nominal=None, view=None, body_only=False):
         gb = GBuffer(w, h, ss, nominal, view)
         for p in self.parts:
-            p.rasterize(gb)
+            if not (body_only and p.limb):
+                p.rasterize(gb)
         return gb

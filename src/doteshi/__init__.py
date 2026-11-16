@@ -1,6 +1,6 @@
 """Procedural sprites of any size and kind.
 
-    from procsprites import sprite, sdf, mat, pat, profile
+    from doteshi import sprite, sdf, mat, pat, profile
 """
 from .api import REGISTRY, build, load, override, rasterize, render, sprite
 from .core import sdf

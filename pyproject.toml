@@ -1,12 +1,13 @@
 [project]
-name = "procsprites"
+name = "doteshi"
 version = "0.1.0"
-description = "Procedural sprites of any size and kind, baked into an atlas"
+description = "doteshi (ドット絵師): procedural pixel-art sprites of any size and kind, baked into an atlas"
 requires-python = ">=3.12"
 dependencies = ["numpy>=2.1", "pillow>=11"]
 
 [project.scripts]
-sprites = "procsprites.cli:main"
+doteshi = "doteshi.cli:main"
+sprites = "doteshi.cli:main"   # short alias
 
 [dependency-groups]
 dev = ["pytest>=8"]
@@ -16,7 +17,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/procsprites"]
+packages = ["src/doteshi"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -2,11 +2,11 @@
 import numpy as np
 import pytest
 
-from procsprites import api, mat, pat, profile, sdf
-from procsprites.core.rng import Rng
-from procsprites.form.scene import Scene
-from procsprites.resolve import painted
-from procsprites.shade.light import ambient_occlusion, cast_shadow, shade
+from doteshi import api, mat, pat, profile, sdf
+from doteshi.core.rng import Rng
+from doteshi.form.scene import Scene
+from doteshi.resolve import painted
+from doteshi.shade.light import ambient_occlusion, cast_shadow, shade
 
 
 def _scene():

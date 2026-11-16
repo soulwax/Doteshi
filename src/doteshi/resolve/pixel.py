@@ -93,7 +93,7 @@ def _snap(rgb8, palette, within=0.035):
     return out
 
 
-def _reduce(index, lab, cap, protect, tidy=0.003):
+def _reduce(index, lab, cap, protect, tidy=0.0015):
     """Merge colours until at most `cap` remain, always making the merge that changes the picture least."""
     locked = set(index[protect].tolist())
     while True:
@@ -153,7 +153,8 @@ def resolve(gb, style, env=None):
     solid |= thin
     # At the smallest sizes, anything slender is drawn as a flat line with no outline: outlined, a one-pixel
     # leg would become three pixels wide and a six-legged creature a blot.
-    lines = (thin | (solid & (fine >= 0.5 * cov))) if style.ink_lines else np.zeros((h, w), bool)
+    wiry = thin | (solid & (fine >= 0.5 * cov))
+    lines = wiry if style.ink_lines else np.zeros((h, w), bool)
 
     # 2. Ownership: the part covering most of each pixel, and that part's own colour and light.
     pidb = _blocks(gb.pid, h, w, ss)
@@ -214,7 +215,7 @@ def resolve(gb, style, env=None):
         yy, xx = (y - 1, x) if y > 0 and solid[y - 1, x] else (y, x - 1) if x > 0 and solid[y, x - 1] else (y + 1, x)
         base[y, x], lit[y, x], owner[y, x], height[y, x] = base[yy, xx], lit[yy, xx], owner[yy, xx], height[yy, xx]
     solid |= notch
-    solid &= ~((count <= 1) & (cov < 0.75) & ~thin & ~keep & ~lines)
+    solid &= ~((count <= 1) & (cov < 0.75) & ~wiry & ~keep)
     if not solid.any():
         m = style.inset
         return Image.new("RGBA", (w + 2 * m, h + 2 * m), (0, 0, 0, 0))
@@ -231,8 +232,10 @@ def resolve(gb, style, env=None):
     if style.dither:
         ys, xs = np.nonzero(solid)
         light = light + style.dither * 0.1 * (BAYER[ys % 4, xs % 4] - 0.5)
+    mid = centres[labels, 0]
+    light = mid + (light - mid) * style.contrast
     pick = np.argmin(np.abs(ramp_lab[:, 0].reshape(len(centres), T)[labels] - light[:, None]), axis=1)
-    pick[lines[solid]] = int(np.argmin(np.abs(levels)))          # lines take their base colour, unlit
+    pick[(lines | keep)[solid]] = int(np.argmin(np.abs(levels)))   # lines and key features: base colour, unlit
     family = np.full((h, w), -1, np.int64)
     family[solid] = labels
     tones = np.zeros((h, w), np.int64)

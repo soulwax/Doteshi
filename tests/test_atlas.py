@@ -7,12 +7,12 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from procsprites.atlas import bake, bleed
-from procsprites.atlas.pack import MaxRects, first_page, overlaps, place
-from procsprites.core.rng import Rng
+from doteshi.atlas import bake, bleed
+from doteshi.atlas.pack import MaxRects, first_page, overlaps, place
+from doteshi.core.rng import Rng
 
 CONTENT = '''
-from procsprites import mat, profile, sdf, sprite, style
+from doteshi import mat, profile, sdf, sprite, style
 
 @sprite("dot")
 def dot(s, rng):
@@ -22,7 +22,7 @@ def dot(s, rng):
 def bar(s, rng):
     s.part(sdf.box(rng.uniform(0.8, 1.8), 0.4, 0.1), mat.matte("#d9a441"), profile=profile.bevel(0.3), relief=0.5)
 
-@sprite("slab", style=style.TINY.but(outline="none", fit=False))
+@sprite("slab", style=style.TINY.but(outline="none", fit=None))
 def slab(s, rng):
     s.part(sdf.box(1.2, 1.2), mat.matte(rng.choice(["#6c9440", "#6e583e"])), profile=profile.flat(0.02), height=0.01)
 '''

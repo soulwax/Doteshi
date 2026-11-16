@@ -1,8 +1,8 @@
 """A cut gem. Generated at every size except 16px, where a hand-drawn cell takes over: at that size a few
 deliberately placed pixels read better than any rendering of facets."""
-from procsprites import mat, override, pat, profile, sdf, sprite
-from procsprites.core.color import ramp, rgb8
-from procsprites.resolve.style import OUTLINE
+from doteshi import mat, override, pat, profile, sdf, sprite
+from doteshi.core.color import ramp, rgb8
+from doteshi.resolve.style import OUTLINE
 
 KINDS = ["#d8344f", "#2fa866", "#3b76d6", "#8d58c9", "#e0a12f", "#35b5b0"]
 

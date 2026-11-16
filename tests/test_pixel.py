@@ -5,12 +5,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from procsprites import api, mat, pat, profile, sdf
-from procsprites.core.rng import Rng
-from procsprites.form.scene import Scene
-from procsprites.lint import metrics
-from procsprites.resolve import pixel
-from procsprites.resolve.style import OUTLINE, PAINTED, PIXEL_HD, TINY, for_size, get
+from doteshi import api, mat, pat, profile, sdf
+from doteshi.core.rng import Rng
+from doteshi.form.scene import Scene
+from doteshi.lint import metrics
+from doteshi.resolve import pixel
+from doteshi.resolve.style import OUTLINE, PAINTED, PIXEL_HD, TINY, for_size, get
 
 KIT = Path("C:/Users/soulwax/Workspace/c++/mellangan/tools/sprite_kit.py")
 RED, WHITE, GREEN = "#c0302a", "#f4f0e6", "#3f9a4a"
@@ -20,7 +20,7 @@ def _resolve(build, size=16, style=TINY):
     s = Scene(Rng("pixel"))
     build(s)
     m = style.inset
-    view = s.fit(size - 2 * m, size - 2 * m, size) if style.fit else None
+    view = s.fit(size - 2 * m, size - 2 * m, size, style.fit == "body") if style.fit else None
     return np.asarray(pixel.resolve(s.rasterize(size - 2 * m, size - 2 * m, style.ss, nominal=size, view=view), style))
 
 
@@ -52,7 +52,7 @@ def _ball(s):
 
 
 def test_pixels_are_hard_and_outlined():
-    for style in (TINY.but(fit=False), PIXEL_HD):
+    for style in (TINY.but(fit=None), PIXEL_HD):
         px = _resolve(_ball, 16 if style.name == "tiny" else 32, style)
         assert px.shape[0] == px.shape[1] == (16 if style.name == "tiny" else 32)
         assert set(np.unique(px[..., 3])) == {0, 255}
@@ -62,7 +62,7 @@ def test_pixels_are_hard_and_outlined():
         dark = px[..., :3].astype(int).sum(axis=-1) < 200
         assert (rim & dark).sum() == rim.sum()                      # the whole silhouette is closed by dark ink
         assert px[0, 0, 3] == 0 and (px[..., :3][~solid] == 0).all()
-    tiny = _resolve(_ball, 16, TINY.but(fit=False))
+    tiny = _resolve(_ball, 16, TINY.but(fit=None))
     solid = tiny[..., 3] > 0
     p = np.pad(solid, 1)
     assert (_ink(tiny) == solid & ~(p[1:-1, :-2] & p[1:-1, 2:] & p[:-2, 1:-1] & p[2:, 1:-1])).all()   # one flat ink
@@ -85,7 +85,7 @@ def test_resolve_is_repeatable():
 
 def test_fit_fills_the_cell():
     small = lambda s: s.part(sdf.circle(0.3).at(0.2, 0.3), mat.glossy(RED))
-    assert (_resolve(small, 16, TINY.but(fit=False))[..., 3] > 0).mean() < 0.2
+    assert (_resolve(small, 16, TINY.but(fit=None))[..., 3] > 0).mean() < 0.2
     fitted = _resolve(small, 16, TINY)[..., 3] > 0
     assert fitted.mean() > 0.6 and fitted[:, 0].any() and fitted[0].any() and fitted[-1].any()
 
@@ -95,7 +95,7 @@ def test_slender_features_keep_one_pixel():
         s.part(sdf.circle(0.45).at(0.0, 0.5), mat.matte(RED))
         s.part(sdf.capsule((0.0, 0.2), (0.0, -0.85), 0.025), mat.matte(GREEN))     # 0.35px wide, on a pixel seam
 
-    px = _resolve(stick, 16, TINY.but(fit=False))
+    px = _resolve(stick, 16, TINY.but(fit=None))
     line = _near(px, GREEN)
     rows = np.nonzero(line.any(axis=1))[0]
     assert len(rows) >= 6 and (np.diff(rows) == 1).all()            # unbroken
@@ -145,7 +145,7 @@ def test_a_marking_is_one_colour_or_the_other():
         s.part(sdf.box(0.9, 0.9), mat.matte(RED), profile=profile.flat(0.02), height=0.01).tint(
             WHITE, pat.custom(lambda c: (c.x > 0.031).astype(float)))
 
-    px = _resolve(build, 16, TINY.but(outline="none", fit=False))
+    px = _resolve(build, 16, TINY.but(outline="none", fit=None))
     row = px[8][px[8, :, 3] > 0][:, :3]
     assert len(row) >= 12 and len({tuple(c) for c in row.tolist()}) == 2
 
@@ -206,10 +206,11 @@ def test_orphans_match_sprite_kit():
 
 def test_demo_sprites_meet_the_tiny_bar():
     """Kenney's 16px sprites, measured from the unmodified cells in Mellangan's atlas, average 5.8 colours and
-    0.4 orphans. The tiny profile must stay in that range: at most 8 colours and 2 orphans per sprite."""
+    0.4 orphans. The tiny profile is deliberately richer in colour (up to 12 tones and the outline) but must
+    stay as clean: at most 2 orphans per sprite."""
     api.load("content")
     for id in ("mushroom", "beetle"):
         rows = [metrics.measure(api.render(id, 16, seed)) for seed in range(1, 9)]
         assert all(r["hard_alpha"] for r in rows)
-        assert max(r["colours"] for r in rows) <= 8 and max(r["orphans"] for r in rows) <= 2
+        assert max(r["colours"] for r in rows) <= 13 and max(r["orphans"] for r in rows) <= 2
         assert np.mean([r["fill"] for r in rows]) > 0.4

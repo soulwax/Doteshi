@@ -22,7 +22,8 @@ class Style:
     outline: str = "flat"              # "flat" (one colour), "tinted" (each surface's own darkest tone), "none"
     outline_color: tuple = OUTLINE
     ink_lines: bool = False            # draw features under a pixel wide as flat unoutlined lines
-    fit: bool = False                  # frame the sprite's solid mass to fill the canvas
+    fit: str = None                    # frame the sprite to fill the canvas: "all" of it, or its "body"
+                                       # only, letting parts marked limb run off the edge
     bases: int = 5                     # most base colours kept
     colors: int = 10                   # most colours in all, not counting the outline
     levels: tuple = (-2.0, -0.9, 0.0, 1.1, 2.2)   # the tones of each base colour, in ramp steps
@@ -32,6 +33,7 @@ class Style:
     lift: float = 0.0                  # lightness added before tones are chosen; keeps small sprites vivid
     contour: int = 1                   # tones to darken where one form passes behind another of the same colour
     contour_gap: float = 0.2           # how far behind, in pixels, before that line is drawn
+    contrast: float = 1.0              # exaggeration of light and shade within each colour
     glint: float = 0.7                 # how much of a highlight smaller than a pixel survives as a bright pixel
     threshold: float = 0.5             # coverage at which a pixel is solid
     thin: float = 0.15                 # coverage at which a feature under a pixel wide still gets a pixel
@@ -45,9 +47,9 @@ class Style:
         return replace(self, **changes)
 
 
-TINY = Style("tiny", "pixel", snap=KENNEY, ink_lines=True, fit=True, bases=6, colors=12, min_dist=0.06,
-             levels=(-1.9, -0.8, 0.0, 1.1, 2.5), lift=0.04)
-PIXEL_HD = Style("pixel-hd", "pixel", outline="tinted", fit=True, bases=9, colors=24, min_dist=0.05,
+TINY = Style("tiny", "pixel", snap=KENNEY, ink_lines=True, fit="body", bases=6, colors=12, min_dist=0.06,
+             levels=(-1.9, -0.8, 0.0, 1.1, 2.5), lift=0.03, contrast=1.35)
+PIXEL_HD = Style("pixel-hd", "pixel", outline="tinted", fit="all", bases=9, colors=24, min_dist=0.05,
                  levels=(-3.0, -2.1, -1.3, -0.6, 0.0, 0.8, 1.6, 2.6))
 PAINTED = Style("painted")
 RELIEF = Style("relief", line=0.0)

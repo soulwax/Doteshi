@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 240" width="880" height="240" role="img" aria-labelledby="t">
+  <title id="t">doteshi: procedural pixel-art sprites, baked into an atlas</title>
+  <defs>
+    <linearGradient id="b-seal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4603f"/>
+      <stop offset="1" stop-color="#c22d1c"/>
+    </linearGradient>
+  </defs>
+  <rect width="880" height="240" rx="30" fill="#151821"/>
+  <g transform="translate(40 40) scale(0.625)">
+    <rect width="256" height="256" rx="58" fill="url(#b-seal)"/>
+    <rect x="3" y="3" width="250" height="250" rx="55" fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="2"/>
+    <rect x="97.28" y="41.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="113.28" y="41.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="129.28" y="41.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="145.28" y="41.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="65.28" y="57.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="81.28" y="57.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="97.28" y="57.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="113.28" y="57.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="129.28" y="57.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="145.28" y="57.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="161.28" y="57.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="177.28" y="57.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="49.28" y="73.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="65.28" y="73.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="81.28" y="73.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="97.28" y="73.28" width="13.44" height="13.44" rx="3.52" fill="#7a160c" fill-opacity="0.38"/>
+    <rect x="113.28" y="73.28" width="13.44" height="13.44" rx="3.52" fill="#7a160c" fill-opacity="0.38"/>
+    <rect x="129.28" y="73.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="145.28" y="73.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="161.28" y="73.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="177.28" y="73.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="193.28" y="73.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="33.28" y="89.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="49.28" y="89.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="65.28" y="89.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="81.28" y="89.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="97.28" y="89.28" width="13.44" height="13.44" rx="3.52" fill="#7a160c" fill-opacity="0.38"/>
+    <rect x="113.28" y="89.28" width="13.44" height="13.44" rx="3.52" fill="#7a160c" fill-opacity="0.38"/>
+    <rect x="129.28" y="89.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="145.28" y="89.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="161.28" y="89.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="177.28" y="89.28" width="13.44" height="13.44" rx="3.52" fill="#7a160c" fill-opacity="0.38"/>
+    <rect x="193.28" y="89.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="209.28" y="89.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="33.28" y="105.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="49.28" y="105.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="65.28" y="105.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="81.28" y="105.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="97.28" y="105.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="113.28" y="105.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="129.28" y="105.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="145.28" y="105.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="161.28" y="105.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="177.28" y="105.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="193.28" y="105.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="209.28" y="105.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="49.28" y="121.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="65.28" y="121.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="81.28" y="121.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="97.28" y="121.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="113.28" y="121.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="129.28" y="121.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="145.28" y="121.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="161.28" y="121.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="177.28" y="121.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="193.28" y="121.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="97.28" y="137.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="113.28" y="137.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="129.28" y="137.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="145.28" y="137.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0" fill-opacity="0.55"/>
+    <rect x="97.28" y="153.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="113.28" y="153.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="129.28" y="153.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="145.28" y="153.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="97.28" y="169.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="113.28" y="169.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="129.28" y="169.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="145.28" y="169.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="97.28" y="185.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="113.28" y="185.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="129.28" y="185.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="145.28" y="185.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="81.28" y="201.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="97.28" y="201.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="113.28" y="201.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="129.28" y="201.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="145.28" y="201.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+    <rect x="161.28" y="201.28" width="13.44" height="13.44" rx="3.52" fill="#fff4e0"/>
+  </g>
+  <text x="236" y="122" font-family="'Segoe UI', 'Helvetica Neue', Inter, Arial, sans-serif" font-size="84" font-weight="700" letter-spacing="-2" fill="#f6f1e7">doteshi</text>
+  <text x="240" y="166" font-family="'Yu Gothic UI', 'Hiragino Sans', 'Noto Sans JP', Meiryo, sans-serif" font-size="24" fill="#f4603f">ドット絵師</text>
+  <text x="240" y="196" font-family="'Segoe UI', 'Helvetica Neue', Inter, Arial, sans-serif" font-size="19" fill="#9aa3b5">procedural sprites, baked into an atlas</text>
+  <rect x="640" y="172" width="26" height="26" rx="6" fill="#4a1f4f"/>
+  <rect x="674" y="172" width="26" height="26" rx="6" fill="#8f2a3c"/>
+  <rect x="708" y="172" width="26" height="26" rx="6" fill="#d8452f"/>
+  <rect x="742" y="172" width="26" height="26" rx="6" fill="#f08a4a"/>
+  <rect x="776" y="172" width="26" height="26" rx="6" fill="#f8cf7a"/>
+</svg>

@@ -176,7 +176,7 @@ def cmd_verify(args):
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(prog="sprites", description="Procedural sprites of any size and kind.")
+    p = argparse.ArgumentParser(prog="doteshi", description="doteshi: procedural sprites of any size and kind, baked into an atlas.")
     p.add_argument("--content", default="content", help="folder of sprite definitions (default: content)")
     sub = p.add_subparsers(dest="cmd", required=True)
 

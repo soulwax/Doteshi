@@ -2,8 +2,8 @@
 with leaves."""
 import math
 
-from procsprites import mat, pat, profile, sdf, sprite
-from procsprites.grow import phyllotaxis
+from doteshi import mat, pat, profile, sdf, sprite
+from doteshi.grow import phyllotaxis
 
 #           petal      petal base  disc       seeds
 KINDS = [("#f6c531", "#d9741f", "#5a3a22", "#2e1d14"),    # sunflower

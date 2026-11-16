@@ -55,7 +55,7 @@ def load(path):
         if file in _LOADED:
             continue
         _LOADED.add(file)
-        name = f"_procsprites_content_{len(_LOADED)}_{file.stem}"
+        name = f"_doteshi_content_{len(_LOADED)}_{file.stem}"
         spec = importlib.util.spec_from_file_location(name, file)
         module = importlib.util.module_from_spec(spec)
         sys.modules[name] = module
@@ -76,12 +76,12 @@ def supersample(size):
     return next((s for s in (2, 3, 4, 6, 8) if s >= want), 8)
 
 
-def rasterize(id, size=256, variant=0, ss=None, inset=0, fit=False):
+def rasterize(id, size=256, variant=0, ss=None, inset=0, fit=None):
     """The surface buffer of one sprite. `inset` leaves that many pixels clear on every side; `fit` frames the
-    sprite's solid mass to fill what remains."""
+    sprite ("all" of it, or its "body" without limbs) to fill what remains."""
     scene = build(id, variant)
     w, h = int(round(size * scene.aspect)) - 2 * inset, size - 2 * inset
-    view = scene.fit(w, h, size) if fit else None
+    view = scene.fit(w, h, size, body_only=fit == "body") if fit else None
     return scene.rasterize(w, h, ss or supersample(size), nominal=size, view=view)
 
 

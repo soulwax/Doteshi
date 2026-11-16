@@ -1,5 +1,5 @@
 """Engine studies: plain forms for checking profiles, materials, relief patterns and lighting."""
-from procsprites import mat, pat, profile, sdf, sprite
+from doteshi import mat, pat, profile, sdf, sprite
 
 CLAY = "#b9a48c"
 
