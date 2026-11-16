@@ -80,7 +80,7 @@ def toadstool(s, rng, x, ground, scale, kind, z0=0.0):
     return foot[0]
 
 
-@sprite("mushroom", sizes=[256], variants=16)
+@sprite("mushroom", sizes=[16], variants=16)
 def mushroom(s, rng):
     kind = rng.choice(KINDS)
     ground = 0.86

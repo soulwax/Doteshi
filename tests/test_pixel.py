@@ -37,7 +37,7 @@ def _ink(px):
 # --- profiles ---
 
 def test_profile_follows_size():
-    assert [for_size(s).name for s in (16, 24, 32, 64, 96, 256)] == ["tiny", "tiny", "pixel-hd", "pixel-hd",
+    assert [for_size(s).name for s in (16, 24, 32, 64, 96, 256)] == ["tiny", "tiny", "tiny", "tiny",
                                                                     "painted", "painted"]
     assert get("pixel-hd", 256) is PIXEL_HD and get(None, 16) is TINY and get(PAINTED, 16) is PAINTED
     assert TINY.inset == 1 and TINY.but(outline="none").inset == 0 and PAINTED.inset == 0

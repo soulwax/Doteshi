@@ -221,7 +221,8 @@ def resolve(gb, style, env=None):
         return Image.new("RGBA", (w + 2 * m, h + 2 * m), (0, 0, 0, 0))
 
     # 3. Colour: families of base colour, a ramp of tones for each, the nearest tone by lightness.
-    centres, labels = _families(base[solid], style.bases, style.min_dist)
+    more = min(2.5, max(1.0, (h * w / 196.0) ** 0.5)) if style.grow_palette else 1.0
+    centres, labels = _families(base[solid], int(round(style.bases * more)), style.min_dist)
     levels = np.array(style.levels, np.float64)
     T = len(levels)
     ramp = _to_rgb8(tone(np.repeat(centres, T, axis=0), np.tile(levels, len(centres))))
@@ -254,7 +255,7 @@ def resolve(gb, style, env=None):
     index[solid] = family[solid] * T + tones[solid]
 
     # 4. Cleanup.
-    _reduce(index, ramp_lab, style.colors, keep)
+    _reduce(index, ramp_lab, int(round(style.colors * more)), keep)
     _absorb_strays(index, ramp_lab, keep)
 
     # 5. Compose, with the outline in the margin.

@@ -60,7 +60,8 @@ class App:
     def sprites(self):
         with self.busy:
             self.refresh()
-            items = [{"id": d.id, "sizes": list(d.sizes), "variants": d.variants, "aspect": d.aspect}
+            items = [{"id": d.id, "sizes": list(d.sizes), "variants": d.variants, "aspect": d.aspect,
+                      "living": d.living}
                      for _, d in sorted(api.REGISTRY.items())]
         version = hashlib.sha256(repr(self.stamp).encode()).hexdigest()[:12]      # changes when content does
         return {"sprites": items, "styles": list(STYLES), "error": self.error, "manifest": str(self.manifest),

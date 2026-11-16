@@ -250,7 +250,7 @@ def test_bad_manifests_say_what_is_wrong(tmp_path):
         _bake(_project(tmp_path, '[atlas]\ncontent = "sprites"\n[[sprite]]\nid = "ghost"\n'), tmp_path)
     with pytest.raises(ValueError, match="unknown .atlas. keys: colour"):
         _bake(_project(tmp_path, '[atlas]\ncontent = "sprites"\ncolour = 1\n'), tmp_path)
-    with pytest.raises(ValueError, match="holds 16x16"):
+    with pytest.raises(ValueError, match="multiple of 16 pixels each way"):
         _bake(_project(tmp_path, GRID.format(slabs=1, dots=1).replace('id = "dot"\nsize = 16', 'id = "dot"\nsize = 24'),
                        "grid.toml"), tmp_path)
     _bake(_project(tmp_path, PACKED.format(dots=1, bars=1)), tmp_path)

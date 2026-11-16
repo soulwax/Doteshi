@@ -12,6 +12,7 @@ A manifest is a TOML file:
     cell = 16                 # grid: sprite size
     gutter = 1                # grid: transparent border inside each cell
     columns = 24              # grid: cells per row
+    style = "tiny"            # style for every entry that does not name its own
 
     [[sprite]]
     id = "mushroom"
@@ -62,6 +63,7 @@ class Settings:
     cell: int = 16
     gutter: int = 1
     columns: int = 24
+    style: str = None
 
 
 def read_manifest(path):
@@ -90,7 +92,8 @@ def read_manifest(path):
                 if name in seen:
                     raise ValueError(f"{path}: {name} is listed twice")
                 seen.add(name)
-                instances.append(Instance(name, id, int(size), int(seed), pivot, bool(entry.get("tile", False)), entry.get("style")))
+                instances.append(Instance(name, id, int(size), int(seed), pivot, bool(entry.get("tile", False)),
+                                          entry.get("style", settings.style)))
     return settings, instances
 
 
@@ -128,6 +131,7 @@ def _record(inst, px, page, x, y, ox, oy, slot):
     return {"id": inst.id, "size": inst.size, "variant": inst.variant, "live": True, "page": page,
             "x": x, "y": y, "w": slot["cw"], "h": slot["ch"], "ox": ox, "oy": oy, "sw": sw, "sh": sh,
             "px": round(inst.pivot[0] * sw - ox, 2), "py": round(inst.pivot[1] * sh - oy, 2),
+            "living": bool(api.REGISTRY[inst.id].living),
             "slot": [slot["x"], slot["y"], slot["w"], slot["h"]], "hash": slot["hash"]}
 
 
@@ -166,30 +170,40 @@ def layout_packed(settings, instances, renders, lock):
 
 
 def layout_grid(settings, instances, renders, lock):
+    """Uniform cells, numbered row by row. A sprite larger than one cell must be a whole number of cells each
+    way; it is cut into cells and takes a block of them, so every piece is an ordinary cell to the game."""
     cell, pitch, cols = settings.cell, settings.cell + 2 * settings.gutter, settings.columns
     old = lock["sprites"]
     sprites = {name: {**prev, "live": False} for name, prev in old.items()}
-    taken = {prev["index"] for prev in old.values()}
+    block = lambda index, bc, br: {index + r * cols + c for r in range(br) for c in range(bc)}
+    taken = set()
+    for prev in old.values():
+        taken |= block(prev["index"], prev.get("cols", 1), prev.get("rows", 1))
     stats = {"new": 0, "kept": 0, "moved": 0}
-    nxt = 0
     for inst in instances:
         px = renders[inst.name]
-        if px.shape[:2] != (cell, cell):
-            raise ValueError(f"{inst.name} is {px.shape[1]}x{px.shape[0]}; this grid holds {cell}x{cell} sprites")
-        if inst.name in old:
-            index = old[inst.name]["index"]
+        h, w = px.shape[:2]
+        if w % cell or h % cell:
+            raise ValueError(f"{inst.name} is {w}x{h}; every sprite in this grid must be a multiple of {cell} "
+                             f"pixels each way, so that it splits cleanly into {cell}x{cell} cells")
+        bc, br = w // cell, h // cell
+        if bc > cols:
+            raise ValueError(f"{inst.name} is {bc} cells wide; the grid has {cols} columns")
+        prev = old.get(inst.name)
+        if prev and (prev.get("cols", 1), prev.get("rows", 1)) == (bc, br):
+            index = prev["index"]
             stats["kept"] += 1
         else:
-            while nxt in taken:
-                nxt += 1
-            index = nxt
-            taken.add(index)
-            stats["new"] += 1
+            index = 0
+            while index % cols + bc > cols or block(index, bc, br) & taken:
+                index += 1
+            taken |= block(index, bc, br)
+            stats["moved" if prev else "new"] += 1
         x, y = index % cols * pitch, index // cols * pitch
-        slot = {"x": x, "y": y, "w": pitch, "h": pitch, "cw": cell, "ch": cell,
+        slot = {"x": x, "y": y, "w": bc * pitch, "h": br * pitch, "cw": cell, "ch": cell,
                 "hash": hashlib.sha256(px.tobytes()).hexdigest()[:16]}
         sprites[inst.name] = {**_record(inst, px, 0, x + settings.gutter, y + settings.gutter, 0, 0, slot),
-                              "index": index}
+                              "index": index, "cols": bc, "rows": br}
     rows = (max(taken) // cols + 1) if taken else 1
     return {"version": locks.VERSION, "layout": "grid", "pages": [[cols * pitch, rows * pitch]],
             "sprites": sprites}, stats
@@ -201,6 +215,17 @@ def compose(settings, instances, renders, lock):
     pages = [np.zeros((h, w, 4), np.uint8) for w, h in lock["pages"]]
     for inst in instances:
         s = lock["sprites"][inst.name]
+        if settings.layout == "grid":
+            cell, pitch = settings.cell, settings.cell + 2 * settings.gutter
+            for r in range(s["rows"]):
+                for c in range(s["cols"]):
+                    piece = renders[inst.name][r * cell:(r + 1) * cell, c * cell:(c + 1) * cell]
+                    x, y = s["x"] + c * pitch, s["y"] + r * pitch
+                    if inst.tile:
+                        pages[0][y - pad:y + cell + pad, x - pad:x + cell + pad] = bleed.extrude(piece, pad)
+                    else:
+                        pages[0][y:y + cell, x:x + cell] = piece
+            continue
         px = renders[inst.name][s["oy"]:s["oy"] + s["h"], s["ox"]:s["ox"] + s["w"]]
         if inst.tile:
             px = bleed.extrude(px, pad)
@@ -224,7 +249,9 @@ def bake(manifest, out_dir, lock_path=None, repack=False, prune=False, cache_dir
     layout = layout_packed if settings.layout == "packed" else layout_grid
     lock, stats = layout(settings, instances, renders, lock)
     pages = compose(settings, instances, renders, lock)
-    files = export.files(settings.name, settings.namespace, settings.layout, settings.padding, lock, pages)
+    grid = None if settings.layout != "grid" else {"cell": settings.cell, "pitch": settings.cell + 2 * settings.gutter,
+                                                     "columns": settings.columns}
+    files = export.files(settings.name, settings.namespace, settings.layout, settings.padding, lock, pages, grid)
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     for name, data in files.items():

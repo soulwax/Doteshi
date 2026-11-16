@@ -5,7 +5,7 @@
 from doteshi import mat, pat, sdf, sprite
 
 
-@sprite("berry", sizes=[16, 32, 64], variants=8)
+@sprite("berry", sizes=[16], variants=8)
 def berry(s, rng):
     colour = rng.choice(["#c0304a", "#3b4fb8", "#7a3fa0"])
     r = rng.uniform(0.5, 0.62)

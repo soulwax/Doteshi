@@ -14,7 +14,7 @@ KINDS = [("#f6c531", "#d9741f", "#5a3a22", "#2e1d14"),    # sunflower
          ("#7cc7ee", "#3b7fc4", "#f5e28a", "#b39a2e")]    # cornflower
 
 
-@sprite("flower", sizes=[256, 64, 16], variants=16)
+@sprite("flower", sizes=[16], variants=16)
 def flower(s, rng):
     petal_c, base_c, disc_c, seed_c = rng.choice(KINDS)
     seed = rng.seed32()

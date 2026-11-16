@@ -24,15 +24,18 @@ class SpriteDef:
     variants: int
     aspect: float
     style: object
+    living: bool = False
 
 
-def sprite(id, sizes=(256,), variants=1, aspect=1.0, style=None):
+def sprite(id, sizes=(16,), variants=1, aspect=1.0, style=None, living=False):
     """Register a sprite. The function receives a Scene and a seeded Rng and adds parts to the scene.
     `aspect` is width over height; sizes are heights in pixels. `style` fixes a style profile (a name or a
-    Style); without it the profile follows the size."""
+    Style); without it the profile follows the size. `living` marks creatures and anything else that moves:
+    by convention they are drawn facing south, glancing a little to the south-south-east (down and slightly to
+    the right on screen), and the game mirrors them for the other direction."""
 
     def register(fn):
-        REGISTRY[id] = SpriteDef(id, fn, tuple(sizes), variants, aspect, style)
+        REGISTRY[id] = SpriteDef(id, fn, tuple(sizes), variants, aspect, style, living)
         return fn
 
     return register

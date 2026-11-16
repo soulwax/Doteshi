@@ -7,7 +7,7 @@ from doteshi.resolve.style import OUTLINE
 KINDS = ["#d8344f", "#2fa866", "#3b76d6", "#8d58c9", "#e0a12f", "#35b5b0"]
 
 
-@sprite("gem", sizes=[64, 16], variants=6)
+@sprite("gem", sizes=[16], variants=6)
 def gem(s, rng):
     color = rng.choice(KINDS)
     seed = rng.seed32()

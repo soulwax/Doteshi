@@ -1,4 +1,4 @@
-"""A broadleaf tree: a skeleton grown toward a cloud of points, thickened by the pipe model, with a clump of
+"""A broadleaf tree, a big structure of 32x32 pixels (a 2x2 block of cells): a skeleton grown toward a cloud of points, thickened by the pipe model, with a clump of
 foliage at every twig end."""
 import numpy as np
 
@@ -14,7 +14,7 @@ KINDS = [("#6b4a35", "#4c8a3a", "#9cc24e", "#27543a"),    # summer oak
          ("#4f3b33", "#b53a2c", "#ee7b3a", "#6b1f24")]    # maple red
 
 
-@sprite("tree", sizes=[256, 64, 16], variants=16)
+@sprite("tree", sizes=[32], variants=16)
 def tree(s, rng):
     bark_c, leaf_c, light_c, shade_c = rng.choice(KINDS)
     seed = rng.seed32()

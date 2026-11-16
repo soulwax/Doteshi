@@ -22,6 +22,7 @@ class Style:
     outline: str = "flat"              # "flat" (one colour), "tinted" (each surface's own darkest tone), "none"
     outline_color: tuple = OUTLINE
     ink_lines: bool = False            # draw features under a pixel wide as flat unoutlined lines
+    grow_palette: bool = False         # allow more colours on sprites that span several 16px cells
     fit: str = None                    # frame the sprite to fill the canvas: "all" of it, or its "body"
                                        # only, letting parts marked limb run off the edge
     bases: int = 5                     # most base colours kept
@@ -48,7 +49,7 @@ class Style:
 
 
 TINY = Style("tiny", "pixel", snap=KENNEY, ink_lines=True, fit="body", bases=6, colors=12, min_dist=0.06,
-             levels=(-1.9, -0.8, 0.0, 1.1, 2.5), lift=0.03, contrast=1.35)
+             levels=(-1.9, -0.8, 0.0, 1.1, 2.5), lift=0.03, contrast=1.35, grow_palette=True)
 PIXEL_HD = Style("pixel-hd", "pixel", outline="tinted", fit="all", bases=9, colors=24, min_dist=0.05,
                  levels=(-3.0, -2.1, -1.3, -0.6, 0.0, 0.8, 1.6, 2.6))
 PAINTED = Style("painted")
@@ -58,8 +59,10 @@ STYLES = {s.name: s for s in (TINY, PIXEL_HD, PAINTED, RELIEF)}
 
 
 def for_size(size):
-    """The profile a sprite gets when it does not ask for one."""
-    return TINY if size <= 24 else PIXEL_HD if size <= 64 else PAINTED
+    """The profile a sprite gets when it does not ask for one. Everything up to 64 pixels is drawn at the
+    same pixel scale and in the same style, so a 32 pixel structure is four 16 pixel cells of the same art,
+    not a finer drawing."""
+    return TINY if size <= 64 else PAINTED
 
 
 def get(style, size):

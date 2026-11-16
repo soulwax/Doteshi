@@ -356,12 +356,16 @@ $("frame").onmousemove = e => {
   const a = state.atlas; if (!a || !a.exists) return;
   const r = $("frame").getBoundingClientRect(), page = a.pages[state.page], k = r.width / page.w;
   const x = (e.clientX - r.left) / k, y = (e.clientY - r.top) / k;
-  const hit = a.sprites.find(s => s.page === state.page && x >= s.x && x < s.x + s.w && y >= s.y && y < s.y + s.h);
+  const pitch = a.meta.pitch || 0;
+  const span = s => [((s.cols || 1) - 1) * pitch + s.w, ((s.rows || 1) - 1) * pitch + s.h];   // blocks of grid cells
+  const hit = a.sprites.find(s => { const [w, h] = span(s); return s.page === state.page && x >= s.x && x < s.x + w && y >= s.y && y < s.y + h; });
   const box = $("box"); box.hidden = !hit;
   if (!hit) { $("picked").textContent = "Point at a sprite to see where it sits."; return; }
-  Object.assign(box.style, { left: hit.x * k + "px", top: hit.y * k + "px", width: hit.w * k + "px", height: hit.h * k + "px" });
+  const [bw, bh] = span(hit);
+  Object.assign(box.style, { left: hit.x * k + "px", top: hit.y * k + "px", width: bw * k + "px", height: bh * k + "px" });
   $("picked").innerHTML = ""; const b = document.createElement("b"); b.textContent = hit.name;
-  $("picked").append(b, `at ${hit.x}, ${hit.y} · ${hit.w} × ${hit.h} · pivot ${hit.pivot[0]}, ${hit.pivot[1]}`);
+  $("picked").append(b, `at ${hit.x}, ${hit.y} · ${hit.source.w} × ${hit.source.h}` + (hit.index !== undefined ? ` · cell ${hit.index}` : "")
+    + (hit.living ? " · living, faces south" : ""));
 };
 $("frame").onmouseleave = () => { $("box").hidden = true; };
 $("frame").onclick = () => {

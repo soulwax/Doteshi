@@ -1,5 +1,7 @@
 """Parts and scenes. A sprite is a scene of parts; each part is a shape with a height profile, a material, relief
 patterns and colour patterns. Rasterising a scene fills a surface buffer at any resolution."""
+import math
+
 import numpy as np
 
 from ..core.color import lab_of, linear_of
@@ -46,10 +48,19 @@ class Part:
             return
         if not self.keep and max(b[2] - b[0], b[3] - b[1]) < MIN_PART * gb.px:
             return
+        if gb.turn:
+            co, si, cx, cy = gb.turn
+            cs = [(cx + co * (px - cx) - si * (py - cy), cy + si * (px - cx) + co * (py - cy))
+                  for px in (b[0], b[2]) for py in (b[1], b[3])]
+            b = (min(p[0] for p in cs), min(p[1] for p in cs), max(p[0] for p in cs), max(p[1] for p in cs))
         win = gb.window(b)
         if win is None:
             return
-        x, y = np.meshgrid(gb.xs[win[1]], gb.ys[win[0]])
+        X, Y = np.meshgrid(gb.xs[win[1]], gb.ys[win[0]])
+        if gb.turn:        # sample the shape in its own, unturned coordinates; patterns see those too
+            x, y = cx + co * (X - cx) + si * (Y - cy), cy - si * (X - cx) + co * (Y - cy)
+        else:
+            x, y = X, Y
         f = self.shape.eval(x, y)
         d = f.d
         gy, gx = np.gradient(d, gb.spx)
@@ -58,7 +69,7 @@ class Part:
             gb.soft.add(self.pid)
         if self.keep:
             total = float(cov.sum())
-            at = ((x * cov).sum() / total, (y * cov).sum() / total) if total > 0 else ((b[0] + b[2]) / 2,
+            at = ((X * cov).sum() / total, (Y * cov).sum() / total) if total > 0 else ((b[0] + b[2]) / 2,
                                                                                          (b[1] + b[3]) / 2)
             gb.keeps.append((self.pid, float(at[0]), float(at[1]), lab_of(self.material.color)))
         if not cov.any():
@@ -167,6 +178,13 @@ class Scene:
     def __init__(self, rng, aspect=1.0):
         self.rng, self.aspect = rng, aspect
         self.parts = []
+        self.turned = None
+
+    def turn(self, degrees, cx=0.0, cy=0.0):
+        """Rotate the whole scene clockwise on screen about (cx, cy). The light stays where it is. Use it to
+        pose something built head-up so that it faces the way the game expects."""
+        a = math.radians(degrees)
+        self.turned = (math.cos(a), math.sin(a), cx, cy)
 
     def part(self, shape, material, **kw):
         p = Part(shape, material, **kw)
@@ -201,6 +219,7 @@ class Scene:
 
     def rasterize(self, w, h, ss=1, nominal=None, view=None, body_only=False):
         gb = GBuffer(w, h, ss, nominal, view)
+        gb.turn = self.turned
         for p in self.parts:
             if not (body_only and p.limb):
                 p.rasterize(gb)

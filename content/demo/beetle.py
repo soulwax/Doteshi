@@ -1,4 +1,5 @@
-"""A beetle seen from above: ridged wing cases, a shield behind the head, jointed legs, feelers and jaws."""
+"""A beetle seen from above: ridged wing cases, a shield behind the head, jointed legs, feelers and jaws.
+Like every living thing it faces south, a little to the south-south-east; the game mirrors it."""
 import numpy as np
 
 from doteshi import mat, pat, profile, sdf, sprite
@@ -13,10 +14,12 @@ KINDS = [("#b5651d", "#3a1f10", "#2a1a14", 0.15),    # amber
          ("#c9962b", "#3b2a12", "#2b1f10", 0.35)]    # gold
 
 
-@sprite("beetle", sizes=[256], variants=16)
+@sprite("beetle", sizes=[16], variants=16, living=True)
 def beetle(s, rng):
     shell_c, mark_c, limb_c, sheen = rng.choice(KINDS)
     seed = rng.seed32()
+    # Built head-up, then turned to face south with the head a little to the south-south-east.
+    s.turn(180.0 - rng.uniform(10.0, 18.0))
     W = rng.uniform(0.36, 0.5)                  # half-width of the wing cases
     y_head, y_neck, y_waist, y_tail = -0.6, -0.42, rng.uniform(-0.2, -0.1), rng.uniform(0.72, 0.82)
     limb = mat.glossy(limb_c, rough=0.34, spec=0.5)
@@ -48,6 +51,7 @@ def beetle(s, rng):
     head = s.part(sdf.lathe((0.0, y_head - 0.12), (0.0, y_neck + 0.06), [0.07, 0.15, 0.18, 0.17]),
                   mat.glossy(limb_c, rough=0.3, spec=0.55, irid=sheen * 0.5), relief=0.75, z=0.05)
     head.bump(pat.pores(0.03, seed + 1), -0.004)
+    head.tint(shell_c, None, 0.4)                # lighter than the eyes, so the face reads at 16 pixels
     s.pair(sdf.circle(0.046).at(0.148, y_head + 0.035), mat.glossy("#1c0f0c", rough=0.1, spec=1.0), z=0.065,
            keep=True, asym=0)
 

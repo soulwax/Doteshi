@@ -1,67 +1,47 @@
-# The demo atlas. Bake with:  uv run doteshi bake
+# The demo atlas, laid out the way Mellangan's atlas is. Bake with:  uv run doteshi bake
 #
-# The focus is 16 to 64 pixels: 16px sprites use the "tiny" profile, 32 to 64px use "pixel-hd".
-# A few large painted sprites show that the same definitions scale up.
+# Rules it follows:
+#   - Every sprite is 16x16. A big structure may be 32x32 or larger, as long as it is a whole number of
+#     16-pixel cells each way; it is cut into cells and stored as a block of them.
+#   - Living things face south and glance to the south-south-east. The game mirrors them.
 
 [atlas]
 name = "atlas"
-layout = "packed"
-padding = 2
-max_size = 2048
+layout = "grid"
+cell = 16                 # sprite size
+gutter = 1                # transparent border inside each 18-pixel cell
+columns = 24
 namespace = "atlas::gen"
 content = "demo"
 
 [[sprite]]
-id = "mushroom"
-sizes = [16, 32, 48, 64]
-variants = 6
+id = "slime"
+variants = 12
 pivot = "bottom"
 
 [[sprite]]
 id = "beetle"
-sizes = [16, 32, 48, 64]
-variants = 6
+variants = 12
 pivot = "center"
 
 [[sprite]]
-id = "tree"
-sizes = [16, 32, 48, 64]
-variants = 6
+id = "mushroom"
+variants = 12
 pivot = "bottom"
 
 [[sprite]]
 id = "flower"
-sizes = [16, 32, 48, 64]
-variants = 6
+variants = 12
 pivot = "bottom"
 
-# The 16px gem is a hand-drawn cell (see demo/gem.py); larger sizes are generated.
 [[sprite]]
 id = "gem"
-sizes = [16, 32, 48, 64]
-variants = 6
+variants = 12
 pivot = "center"
 
-[[sprite]]
-id = "mushroom"
-size = 128
-seeds = [11, 16]
-pivot = "bottom"
-
-[[sprite]]
-id = "beetle"
-size = 128
-seeds = [3, 13]
-pivot = "center"
-
+# A big structure: 32x32, stored as a 2x2 block of cells.
 [[sprite]]
 id = "tree"
-size = 128
-seeds = [1, 5]
-pivot = "bottom"
-
-[[sprite]]
-id = "flower"
-size = 128
-seeds = [3, 6]
+size = 32
+variants = 12
 pivot = "bottom"
