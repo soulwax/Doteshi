@@ -142,7 +142,11 @@ class Shape:
 # --- primitives, centred on the origin unless they take end points ---
 
 def circle(r):
-    return Shape(lambda x, y: Field(np.hypot(x, y) - r, x, y), (-r, -r, r, r))
+    def fn(x, y):
+        d = np.hypot(x, y) - r
+        return Field(d, x, y, np.clip(-d / r, 0.0, 1.0), r)
+
+    return Shape(fn, (-r, -r, r, r))
 
 
 def ellipse(rx, ry, sphere=False):
@@ -201,7 +205,7 @@ def _segment(x, y, ax, ay, bx, by, ra, rb):
     h = np.clip((wx * ex + wy * ey) / max(ex * ex + ey * ey, 1e-18), 0.0, 1.0)
     rr = ra + (rb - ra) * h
     dist = np.hypot(wx - ex * h, wy - ey * h)
-    side = np.where(ex * wy - ey * wx < 0, -1.0, 1.0)
+    side = np.where(ey * wx - ex * wy < 0, -1.0, 1.0)
     return dist - rr, h, rr, dist * side
 
 
@@ -212,7 +216,8 @@ def capsule(a, b, ra, rb=None):
 
 def stroke(points, radii, samples=None, spline=True):
     """A tube along a curve through `points`, with a radius that varies along it. u runs 0..1 along the curve,
-    v runs -1..1 across it, and depth is that of a round tube."""
+    v runs -1..1 across it (positive to screen-right where the curve heads down the screen), and depth is that
+    of a round tube."""
     pts = np.asarray(points, np.float64)
     if spline and len(pts) > 2:
         n = samples or max(12, 8 * (len(pts) - 1))
@@ -267,7 +272,7 @@ def lathe(a, b, widths):
     def fn(x, y):
         px, py = x - ax, y - ay
         along = px * ex + py * ey
-        across = -px * ey + py * ex
+        across = px * ey - py * ex
         tt = np.clip(along / length, 0.0, 1.0)
         w = np.interp(tt, ts, table)
         dw = np.interp(tt, ts, slope)

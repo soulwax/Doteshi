@@ -1,0 +1,34 @@
+# The demo atlas: the two M1 subjects at mixed sizes.
+# Bake with:  uv run sprites bake
+
+[atlas]
+name = "atlas"
+layout = "packed"
+padding = 2
+max_size = 2048
+namespace = "atlas::gen"
+content = "demo"
+
+[[sprite]]
+id = "mushroom"
+sizes = [128, 64]
+variants = 8
+pivot = "bottom"
+
+[[sprite]]
+id = "mushroom"
+size = 256
+seeds = [11, 16]
+pivot = "bottom"
+
+[[sprite]]
+id = "beetle"
+sizes = [128, 64]
+variants = 8
+pivot = "center"
+
+[[sprite]]
+id = "beetle"
+size = 256
+seeds = [3, 13]
+pivot = "center"

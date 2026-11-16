@@ -10,6 +10,7 @@ from .form.scene import Scene
 from .resolve import painted
 
 REGISTRY = {}
+_LOADED = set()
 
 
 @dataclass(frozen=True)
@@ -34,8 +35,11 @@ def sprite(id, sizes=(256,), variants=1, aspect=1.0):
 
 def load(path):
     """Import every .py file under a content folder so its sprites register."""
-    for i, file in enumerate(sorted(Path(path).rglob("*.py"))):
-        name = f"_procsprites_content_{i}_{file.stem}"
+    for file in sorted(Path(path).resolve().rglob("*.py")):
+        if file in _LOADED:
+            continue
+        _LOADED.add(file)
+        name = f"_procsprites_content_{len(_LOADED)}_{file.stem}"
         spec = importlib.util.spec_from_file_location(name, file)
         module = importlib.util.module_from_spec(spec)
         sys.modules[name] = module

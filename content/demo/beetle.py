@@ -48,7 +48,7 @@ def beetle(s, rng):
     head = s.part(sdf.lathe((0.0, y_head - 0.12), (0.0, y_neck + 0.06), [0.07, 0.15, 0.18, 0.17]),
                   mat.glossy(limb_c, rough=0.3, spec=0.55, irid=sheen * 0.5), relief=0.75, z=0.05)
     head.bump(pat.pores(0.03, seed + 1), -0.004)
-    s.pair(sdf.circle(0.042).at(0.125, y_head + 0.03), mat.glossy("#0d0b10", rough=0.12, spec=0.95), z=0.06,
+    s.pair(sdf.circle(0.046).at(0.148, y_head + 0.035), mat.glossy("#1c0f0c", rough=0.1, spec=1.0), z=0.065,
            keep=True, asym=0)
 
     # Shield behind the head.

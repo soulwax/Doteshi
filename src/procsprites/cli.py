@@ -1,5 +1,7 @@
 """Command line: list, render, sheet, debug."""
 import argparse
+import hashlib
+import json
 import sys
 import time
 from pathlib import Path
@@ -98,6 +100,48 @@ def cmd_debug(args):
               Path(args.out) / f"{id}_debug.png")
 
 
+def cmd_bake(args):
+    from .atlas import bake
+    start = time.perf_counter()
+    files, st = bake.bake(args.manifest, args.out, repack=args.repack, prune=args.prune,
+                          cache_dir=None if args.no_cache else ".cache/sprites",
+                          report=lambda name: print(f"  rendered {name}"))
+    pages = ", ".join(f"{w}x{h}" for w, h in st["pages"])
+    print(f"baked {st['sprites']} sprites onto {len(st['pages'])} page(s) ({pages}), {st['fill']:.0%} full, "
+          f"in {time.perf_counter() - start:.1f}s")
+    print(f"  {st['new']} new, {st['kept']} kept in place, {st['moved']} moved, {st['retired']} retired")
+    for name in st["files"]:
+        print(f"  wrote {Path(args.out) / name}")
+    print(f"  lock  {st['lock']}")
+
+
+def cmd_verify(args):
+    """Bake twice from scratch, with no cache, and compare every byte; then check the placements."""
+    import shutil
+    import tempfile
+    from .atlas import bake
+    settings, _ = bake.read_manifest(args.manifest)
+    lock_path = Path(args.manifest).with_name(f"{settings.name}.lock.json")
+    runs = []
+    with tempfile.TemporaryDirectory() as tmp:
+        for k in ("a", "b"):
+            work = Path(tmp) / k
+            work.mkdir()
+            if lock_path.exists():
+                shutil.copy(lock_path, work / lock_path.name)
+            files, _ = bake.bake(args.manifest, work / "out", lock_path=work / lock_path.name, cache_dir=None)
+            files["lock"] = (work / lock_path.name).read_bytes()
+            runs.append(files)
+    errors = [f"{name} differs between two bakes" for name in runs[0] if runs[0][name] != runs[1].get(name)]
+    errors += bake.check(json.loads(runs[0]["lock"]))
+    for e in errors:
+        print(f"error: {e}")
+    if errors:
+        sys.exit(1)
+    digest = hashlib.sha256(b"".join(runs[0][k] for k in sorted(runs[0]))).hexdigest()[:16]
+    print(f"verified: two bakes are byte-identical ({len(runs[0])} files, sha256 {digest}); placements are sound")
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="sprites", description="Procedural sprites of any size and kind.")
     p.add_argument("--content", default="content", help="folder of sprite definitions (default: content)")
@@ -134,6 +178,18 @@ def main(argv=None):
     d.add_argument("--seed", type=int, default=1)
     d.add_argument("--out", default="out/sheets")
     d.set_defaults(run=cmd_debug)
+
+    b = sub.add_parser("bake", help="bake a manifest into atlas.png, atlas.json and a C++ header")
+    b.add_argument("manifest", nargs="?", default="content/manifest.toml")
+    b.add_argument("--out", default="out")
+    b.add_argument("--repack", action="store_true", help="discard the lock file and lay everything out again")
+    b.add_argument("--prune", action="store_true", help="free the slots of sprites no longer in the manifest")
+    b.add_argument("--no-cache", action="store_true", help="render everything again")
+    b.set_defaults(run=cmd_bake)
+
+    v = sub.add_parser("verify", help="bake twice and compare bytes; check placements")
+    v.add_argument("manifest", nargs="?", default="content/manifest.toml")
+    v.set_defaults(run=cmd_verify)
 
     args = p.parse_args(argv)
     if Path(args.content).is_dir():

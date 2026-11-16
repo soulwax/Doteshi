@@ -4,6 +4,7 @@ import math
 import numpy as np
 
 from procsprites import mat, pat, profile, sdf, sprite
+from procsprites.core import curves
 from procsprites.core.mathx import smoothstep
 
 #            cap        spots      stem       gills
@@ -40,15 +41,16 @@ def toadstool(s, rng, x, ground, scale, kind, z0=0.0):
     stem.tint("#8a6f52", pat.gradient("u", 0.5, 0.0) * pat.mottle(0.12 * scale, seed + 1), 0.75)
     stem.tint(gill_c, pat.gradient("u", 0.8, 1.0), 0.5)
     if rng.chance(0.6):
-        # A skirt left by the veil.
-        at = rng.uniform(0.55, 0.72)
-        px, py = foot[0] + (cx - foot[0]) * at, foot[1] + (rim_y - foot[1]) * at
-        w = rs * rng.uniform(1.0, 1.2)
-        sag = rs * rng.uniform(0.3, 0.55)
-        skirt = s.part(sdf.stroke([(px - w, py + sag), (px, py), (px + w, py + sag * rng.uniform(0.6, 1.3))],
-                                  [rs * 0.05, rs * 0.2, rs * 0.05]), mat.matte(stem_c, trans=0.45),
-                       z=z0 + 0.02 + rs * 0.8)
-        skirt.bump(pat.rings(0.02 * scale), 0.004 * scale).tint(gill_c, None, 0.55)
+        # A collar left by the veil, drooping round the stem.
+        spine = curves.smooth([foot, mid, (cx, rim_y + g * 0.15)], 40)
+        i = int(rng.uniform(0.55, 0.72) * 39)
+        (px, py), (tx, ty) = spine[i], curves.tangents(spine)[i]
+        tilt = math.degrees(math.atan2(tx, -ty)) + rng.uniform(-6, 6)
+        collar = s.part(sdf.ellipse(rs * rng.uniform(1.12, 1.3), rs * rng.uniform(0.22, 0.32)).warp(
+            0.012 * scale, 9.0 / scale, seed + 7).rot(tilt).at(px, py), mat.matte(stem_c, trans=0.5),
+            relief=0.5, z=z0 + 0.02 + rs * 0.78)
+        collar.bump(pat.custom(lambda c: 0.5 + 0.5 * np.cos(c.u / (rs * 0.11)), size=rs * 0.11), 0.006 * scale)
+        collar.tint(gill_c, None, 0.35).tint("#8a6f52", pat.gradient("v", -rs * 0.1, rs * 0.3), 0.6)
 
     # Underside: a tilted dish of gills, facing down and away from the light.
     under = sdf.ellipse(Rr * 0.985, g).at(cx, rim_y)
@@ -86,9 +88,9 @@ def mushroom(s, rng):
 
     # A mound of moss and earth to stand on.
     mound = s.part(sdf.ellipse(rng.uniform(0.5, 0.68), 0.1).at(rng.uniform(-0.05, 0.05), ground + 0.02).warp(
-        0.025, 3.0, seed), mat.matte("#5b4a36"), relief=0.7, z=-0.02)
-    mound.bump(pat.lumps(0.09, seed), 0.02).bump(pat.pores(0.05, seed + 1, 0.7), -0.008)
-    mound.tint("#587a3a", pat.mottle(0.22, seed + 2, contrast=1.8).step(0.35, 0.65), 0.9)
+        0.025, 3.0, seed), mat.matte("#6e583e"), relief=1.1, z=-0.02)
+    mound.bump(pat.lumps(0.09, seed), 0.03).bump(pat.pores(0.05, seed + 1, 0.7), -0.008)
+    mound.tint("#6c9440", pat.mottle(0.22, seed + 2, contrast=1.8).step(0.3, 0.6), 0.9)
 
     blades = rng.stream("grass")
 

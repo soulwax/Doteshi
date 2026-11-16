@@ -33,7 +33,7 @@ class Lighting:
     shadow_length: float = 0.75
     shadow_soft: float = 0.3
     shadow_depth: float = 0.9             # how much of the key light a cast shadow removes
-    bloom: float = 0.05                   # glow spread, in sprite units
+    bloom: float = 0.07                   # glow spread, in sprite units
 
 
 def _unit(v):
