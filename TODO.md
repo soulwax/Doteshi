@@ -197,9 +197,9 @@ One module per kind under `library/`, each a parameterised builder with ranges, 
 
 This is what the tool is for; it is the next large piece.
 
-- [ ] **Import the current atlas.** Read `res/atlas.png` through its declared bands and pin every cell at its current rectangle. Done when the baked output is pixel-identical to the input.
+- [x] **Import the current atlas.** Read `res/atlas.png` through its declared bands and pin every cell at its current rectangle. Done when the baked output is pixel-identical to the input. *`python -m doteshi.atlas.mellangan import`.*
 - [ ] **Emit the header.** Generate accessors equivalent to those in `src/Atlas.hpp`. Done when Mellangan builds against the generated header with no call-site changes.
-- [ ] **Migrate one band.** Replace one band (suggested: `flora`) with generated sprites at the same indices, as a draft with a comparison sheet. Done when the user approves the sheet. Nothing in the Mellangan repo is written before that.
+- [x] **Migrate one band.** Replace one band (suggested: `flora`) with generated sprites at the same indices, as a draft with a comparison sheet. Done when the user approves the sheet. Nothing in the Mellangan repo is written before that. *Done 2026-11-17 at the owner's request: `atlas/mellangan.py` bakes a band manifest straight into cells, with a lock of pixel hashes; Mellangan's `make_assets.py` runs it as its `doteshi` stage. Nations, horrors and four oddities are baked this way.*
 - [ ] **Regenerate `atlas.yaml`.** Emit it from the lock file so it can no longer drift.
 
 ## M9. Hardening

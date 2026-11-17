@@ -274,6 +274,34 @@ for (int row = 0; row < tree_32_5.rows; ++row)          // a block of cells
         draw(piece(tree_32_5, row, col), x + col * CELL, y + row * CELL);
 ```
 
+### Baking into Mellangan's bands
+
+Mellangan addresses cells by band and index (its `tools/atlas_layout.py`), not by one grid. A band manifest places
+each sprite there:
+
+```toml
+[atlas]
+name = "doteshi"
+layout = "mellangan"
+bands = "../../atlas_layout.py"   # relative to the manifest
+content = "content"
+
+[[sprite]]
+id = "oddity_geode"
+band = "oddities b"
+index = 0                         # optional: seed, size (a 32px sprite takes a 2x2 block), style
+```
+
+```sh
+uv run python -m doteshi.atlas.mellangan bake path/to/manifest.toml --out out/mellangan [--check]
+```
+
+The bake writes `doteshi.png`, a page the size of the atlas with every sprite in its cell, and `doteshi.json`, and
+updates `doteshi.lock.json` beside the manifest with a pixel hash per placement. It prints which sprites are new,
+changed, moved or removed. `--check` leaves the lock alone and fails when it is stale. Mellangan's atlas build runs
+this through its `tools/doteshi_assets.py`. `python -m doteshi.atlas.mellangan import --atlas ... --layout ...` pins
+every existing cell and checks that the atlas rebuilds pixel for pixel.
+
 ## Commands
 
 Run each as `uv run doteshi <command>`. `sprites` is a shorter alias for `doteshi`.
@@ -344,7 +372,7 @@ doteshi is at version 0.1. The plan and its open items are in [TODO.md](TODO.md)
 
 **Not built yet:**
 
-- The adapter that reads Mellangan's existing atlas and writes into it. Today doteshi bakes its own atlas in the same layout.
+- A generated replacement for Mellangan's hand-written atlas header.
 - Animation frames (walk, idle, attack) for living things.
 - A `lint` command with thresholds, and a look-alike check between sprites.
 - More growth generators and a wider library of kinds. There is no humanoid yet.
